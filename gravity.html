@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>学習用：重力シミュレータ</title>
+    <style>
+        /* 画面の装飾 */
+        body { background-color: #111; color: white; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; }
+        canvas { border: 1px solid #555; background-color: #000; }
+        .controls { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>万有引力シミュレータ</h2>
+    <canvas id="simCanvas" width="600" height="400"></canvas>
+    <div class="controls">
+        <p>中心の星（太陽）に向かって万有引力が働いています。</p>
+        <p>惑星をドラッグして引っ張り、離すと発射されます。</p>
+        <button onclick="resetSimulation()">リセット</button>
+    </div>
+
+<script>
+    // ==========================================
+    //  1. 設定と準備 (Variables)
+    // ==========================================
+    const canvas = document.getElementById('simCanvas');
+    if (!canvas) {
+        alert('キャンバス要素が見つかりません。HTMLを確認してください。');
+        throw new Error('Canvas element not found');
+    }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        alert('2D描画コンテキストの取得に失敗しました。');
+        throw new Error('2D context not available');
+    }
+
+    // 物理定数
+    const G = 5500; // 万有引力定数（画面で見やすいように大きめに調整）
+    const DT = 0.016; // 時間の進み幅（1フレームあたりの秒数。約1/60秒）
+    const INITIAL_PLANET_DISTANCE = 150; // 惑星の初期距離（太陽から）= 150,000,000 km (1AU)
+    const MAX_PATH_LENGTH = 200; // 軌跡の最大表示数
+    const ORBITAL_VELOCITY = 135; // 円軌道を保つための速度（初期距離に対応）
+    
+    // カメラズーム設定
+    let zoom = 1.0; // 画角スケール（1.0 = 通常）
+    const MAX_ZOOM = 8.0; // 最大ズームアウト倍率
+    let isEscaped = false; // 惑星が逃亡したかフラグ
+
+    // 背景星フィールド
+    let backgroundStars = [];
+    
+    function generateBackgroundStars() {
+        const stars = [];
+        for (let i = 0; i < 100; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 1.5,
+                opacity: Math.random() * 0.7 + 0.3
+            });
+        }
+        return stars;
+    }
+
+    // 中心の星（太陽）
+    const sun = {
+        x: canvas.width / 2, // 画面の中央
+        y: canvas.height / 2,
+        mass: 500,           // 質量 M
+        radius: 20,          // 見た目の大きさ（表示用。実際の直径：約1,390,000 km）
+        color: 'orange'
+    };
+
+    // 周回する惑星（地球）
+    const planet = {
+        x: canvas.width / 2 + 150,     // 初期位置x（太陽の右側）= 150,000,000 km
+        y: canvas.height / 2, // 初期位置y（太陽と同じy座標）
+        vx: 0,  // 初期速度x（右向きに初速を与える＝遠心力と釣り合わせる）
+        vy: -135,   // 初期速度y
+        mass: 1, // 質量 m
+        radius: 2,  // 見た目の大きさ（表示用。実際の直径：約12,742 km）
+        color: '#00ccff',
+        path: [] // 軌跡を保存する配列
+    };
+
+    // ドラッグ操作の状態管理
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    // カタパルト発射中の状態管理
+    let isLaunching = false;
+    let launchAx = 0;
+    let launchAy = 0;
+    let launchTargetX = 0;
+    let launchTargetY = 0;
+
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const newWidth = Math.round(rect.width);
+        const newHeight = Math.round(rect.height);
+
+        if (newWidth === 0 || newHeight === 0) return;
+
+        const oldSunX = sun.x;
+        const oldSunY = sun.y;
+
+        if (canvas.width !== newWidth || canvas.height !== newHeight) {
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+        }
+
+        const dx = newWidth / 2 - oldSunX;
+        const dy = newHeight / 2 - oldSunY;
+
+        sun.x = newWidth / 2;
+        sun.y = newHeight / 2;
+        planet.x += dx;
+        planet.y += dy;
+        dragStartX += dx;
+        dragStartY += dy;
+        launchTargetX += dx;
+        launchTargetY += dy;
+
+        for (let i = 0; i < planet.path.length; i++) {
+            planet.path[i].x += dx;
+            planet.path[i].y += dy;
+        }
+
+        backgroundStars = generateBackgroundStars();
+    }
+
+    // ==========================================
+    //  カメラシステム (Camera System)
+    // ==========================================
+    function updateCamera() {
+        // 太陽からの距離を計算
+        let dx = planet.x - sun.x;
+        let dy = planet.y - sun.y;
+        let distFromSun = Math.sqrt(dx * dx + dy * dy);
+
+        // 最大ズームに達していない場合のみズーム計算を実行
+        if (zoom < MAX_ZOOM) {
+            // 必要なズームレベルを計算
+            let requiredZoom = 1.0;
+            const padding = 1.2; // キャンバスの端から安全余白
+            
+            // 惑星がキャンバス範囲に収まるようにズーム計算
+            const maxDist = Math.max(
+                Math.abs(planet.x - sun.x),
+                Math.abs(planet.y - sun.y)
+            );
+            
+            // 安全な表示範囲を確保
+            const safeRange = Math.min(canvas.width, canvas.height) / (2 * padding);
+            if (maxDist > safeRange) {
+                requiredZoom = (maxDist * padding * 2) / Math.min(canvas.width, canvas.height);
+            }
+
+            // ズームは拡大方向のみ更新（狭くはならない）
+            if (requiredZoom > zoom) {
+                const zoomSpeed = 0.3; // より素早い反応
+                zoom = Math.min(zoom + (requiredZoom - zoom) * zoomSpeed, MAX_ZOOM);
+            }
+        } else {
+            // 最大ズームに達した後の逃亡判定
+            // 画面座標での惑星位置を計算
+            let screenX = (planet.x - sun.x) / zoom + sun.x;
+            let screenY = (planet.y - sun.y) / zoom + sun.y;
+            
+            // 太陽から遠ざかっているか確認
+            let vx = planet.vx;
+            let vy = planet.vy;
+            let towardsSun = -(dx * vx + dy * vy) / (distFromSun + 1); // 負 = 遠ざかっている
+            
+            // 画面外に出ていく場合 かつ 太陽から遠ざかっている場合は逃亡判定
+            const isOutOfScreen = screenX < -50 || screenX > canvas.width + 50 ||
+                                  screenY < -50 || screenY > canvas.height + 50;
+            if (isOutOfScreen && towardsSun < 0) {
+                isEscaped = true;
+            }
+        }
+
+        // 逃亡している場合はシミュレーション終了
+        if (isEscaped) {
+            return false; // シミュレーション終了フラグ
+        }
+        return true;
+    }
+
+    // ==========================================
+    //  2. 物理エンジン (Physics Engine)
+    // ==========================================
+    function updatePhysics() {
+        // ドラッグ中は物理計算をストップ（惑星を手で持っている状態）
+        if (isDragging) return;
+
+        // カタパルト発射中（等加速度直線運動）
+        if (isLaunching) {
+            // 速度を更新 (v = v0 + at)
+            planet.vx += launchAx * DT;
+            planet.vy += launchAy * DT;
+
+            // 位置を更新
+            planet.x += planet.vx * DT;
+            planet.y += planet.vy * DT;
+
+            // 目標地点（初期位置）を通過したかチェック
+            // 「残り距離ベクトル」と「発射方向（加速度）」の内積が負になったら通過とみなす
+            let rx = launchTargetX - planet.x;
+            let ry = launchTargetY - planet.y;
+            if (rx * launchAx + ry * launchAy <= 0) {
+                isLaunching = false; // 発射終了、重力モードへ
+            }
+            return; // 重力計算はスキップ
+        }
+
+        // A. 距離を計算する
+        let dx = sun.x - planet.x; // x方向の距離
+        let dy = sun.y - planet.y; // y方向の距離
+        let distSq = dx*dx + dy*dy; // 距離の2乗 (r^2)
+        let dist = Math.sqrt(distSq); // 距離 (r)
+
+        // B. 万有引力の大きさを求める (F = G * M * m / r^2)
+        // ※ 衝突回避のため、距離が近すぎるときは計算を制限しています
+        if (dist < sun.radius) return; 
+
+        const force = (G * sun.mass * planet.mass) / distSq;
+
+        // C. 力を成分に分解する (Fx, Fy)
+        // 三角比：cosθ = dx/dist, sinθ = dy/dist
+        let ax = (force / planet.mass) * (dx / dist); // 加速度ax = F/m * cosθ
+        let ay = (force / planet.mass) * (dy / dist); // 加速度ay = F/m * sinθ
+
+        // D. 速度を更新する (v = v0 + at)
+        planet.vx += ax * DT;
+        planet.vy += ay * DT;
+
+        // E. 位置を更新する (x = x0 + vt)
+        planet.x += planet.vx * DT;
+        planet.y += planet.vy * DT;
+
+        // F. 軌跡を保存（見た目のため）
+        planet.path.push({x: planet.x, y: planet.y});
+        if (planet.path.length > MAX_PATH_LENGTH) planet.path.shift(); // 古い軌跡を消す
+    }
+
+    // ==========================================
+    //  3. 描画処理 (Rendering)
+    // ==========================================
+    function draw() {
+        // 画面をクリア（黒板消し）
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 背景星を描く（ズームしない - 画面座標固定）
+        ctx.fillStyle = 'white';
+        for (let star of backgroundStars) {
+            ctx.globalAlpha = star.opacity;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1.0;
+
+        // ズーム適用時の変換
+        ctx.save();
+        ctx.translate(sun.x, sun.y); // 太陽を中心に
+        ctx.scale(1 / zoom, 1 / zoom); // ズームアウト
+        ctx.translate(-sun.x, -sun.y); // 太陽の位置に戻す
+
+        // 太陽を描く
+        ctx.beginPath();
+        ctx.arc(sun.x, sun.y, sun.radius, 0, Math.PI * 2);
+        ctx.fillStyle = sun.color;
+        ctx.fill();
+
+        // 逃亡且つ最大ズームの場合は、惑星と軌跡を描画しない
+        const shouldDrawPlanet = !(isEscaped && zoom >= MAX_ZOOM);
+
+        if (shouldDrawPlanet) {
+            // 惑星を描く
+            ctx.beginPath();
+            ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
+            ctx.fillStyle = planet.color;
+            ctx.fill();
+        }
+
+        // ドラッグ中のガイド線（スリングショットのゴム）を描く
+        if (shouldDrawPlanet && (isDragging || isLaunching)) {
+            ctx.beginPath();
+            ctx.moveTo(dragStartX, dragStartY); // 始点：発射基準点
+            ctx.lineTo(planet.x, planet.y);     // 終点：現在の惑星位置
+            ctx.strokeStyle = 'white';
+            ctx.stroke();
+        }
+
+        ctx.restore();
+
+        // 惑星の軌跡を描く（ズーム変換適用後に描画して線幅を固定）
+        if (shouldDrawPlanet) {
+            ctx.beginPath();
+            for (let i = 0; i < planet.path.length; i++) {
+                // ワールド座標をスクリーン座標に変換
+                let screenX = (planet.path[i].x - sun.x) / zoom + sun.x;
+                let screenY = (planet.path[i].y - sun.y) / zoom + sun.y;
+                ctx.lineTo(screenX, screenY);
+            }
+            ctx.strokeStyle = 'rgba(0, 204, 255, 0.4)';
+            ctx.lineWidth = 2; // 固定の線幅
+            ctx.stroke();
+        }
+
+    }
+
+    // ==========================================
+    //  4. アニメーションループ (Game Loop)
+    // ==========================================
+    let isRunning = true;
+    
+    function loop() {
+        if (!isRunning) return; // シミュレーション終了時は停止
+        
+        updatePhysics(); // 計算して
+        if (!updateCamera()) { // カメラ更新と逃亡判定
+            isRunning = false; // シミュレーション終了
+            return;
+        }
+        draw();          // 描画する
+        requestAnimationFrame(loop); // これを繰り返す
+    }
+
+    // ==========================================
+    //  5. ユーザー操作 (Interaction)
+    // ==========================================
+    function resetSimulation() {
+        planet.x = canvas.width / 2 + INITIAL_PLANET_DISTANCE;
+        planet.y = canvas.height / 2;
+        planet.vx = 0;
+        planet.vy = -ORBITAL_VELOCITY; // 円軌道速度
+        planet.path = [];
+        zoom = 1.0;
+        isEscaped = false;
+        isRunning = true;
+        loop(); // アニメーション再開
+    }
+
+    // ==========================================
+    //  6. マウス操作 (Mouse Events)
+    //  ドラッグ＆リリースで発射（スリングショット方式）
+    // ==========================================
+    function handleDragStart(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        isDragging = true;
+        
+        // クリック/タッチした位置を「発射基準点」として記録
+        dragStartX = clientX - rect.left;
+        dragStartY = clientY - rect.top;
+
+        // 惑星もそこに移動させる
+        planet.x = dragStartX;
+        planet.y = dragStartY;
+        planet.vx = 0;
+        planet.vy = 0;
+        planet.path = []; // 軌跡をリセット
+    }
+
+    function handleDragMove(clientX, clientY) {
+        if (!isDragging) return;
+        const rect = canvas.getBoundingClientRect();
+        // 惑星をマウス/タッチと一緒に動かす
+        planet.x = clientX - rect.left;
+        planet.y = clientY - rect.top;
+    }
+
+    function handleDragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        // カタパルト発射開始
+        isLaunching = true;
+        launchTargetX = dragStartX;
+        launchTargetY = dragStartY;
+
+        // 加速度を設定（距離に比例した一定の加速度を与える）
+        // 以前の初速度計算 (v = d * 1.5) と同じ最終速度になるように加速度 a を設定
+        // 公式 v^2 = 2ad より、(1.5d)^2 = 2ad -> 2.25d^2 = 2ad -> a = 1.125d
+        launchAx = (dragStartX - planet.x) * 1.5;
+        launchAy = (dragStartY - planet.y) * 1.5;
+
+        planet.vx = 0; // 初速度は0からスタート
+        planet.vy = 0;
+    }
+
+    // マウスイベント
+    canvas.addEventListener('mousedown', e => {
+        handleDragStart(e.clientX, e.clientY);
+    });
+
+    canvas.addEventListener('mousemove', e => {
+        handleDragMove(e.clientX, e.clientY);
+    });
+
+    canvas.addEventListener('mouseup', e => {
+        handleDragEnd();
+    });
+
+    // タッチイベント（タブレット・スマートフォン対応）
+    canvas.addEventListener('touchstart', e => {
+        e.preventDefault(); // ブラウザのデフォルト操作を無効化
+        const touch = e.touches[0];
+        handleDragStart(touch.clientX, touch.clientY);
+    });
+
+    canvas.addEventListener('touchmove', e => {
+        e.preventDefault(); // ブラウザのデフォルト操作を無効化
+        const touch = e.touches[0];
+        handleDragMove(touch.clientX, touch.clientY);
+    });
+
+    canvas.addEventListener('touchend', e => {
+        e.preventDefault(); // ブラウザのデフォルト操作を無効化
+        handleDragEnd();
+    });
+
+    // スタート！
+    loop();
+
+</script>
+</body>
+</html>
