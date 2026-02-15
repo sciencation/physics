@@ -32,7 +32,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 15px;
-            width: 640px;
+            width: 480px;
         }
         .control-group {
             background: #333;
@@ -89,7 +89,7 @@
     <h2>分子の内部エネルギー：回転と振動モード</h2>
     
     <div class="container">
-        <canvas id="simCanvas" width="640" height="480"></canvas>
+        <canvas id="simCanvas" width="480" height="360"></canvas>
     </div>
 
     <div class="controls">
@@ -110,7 +110,7 @@
             <div id="vibControlsDi">
                 <button id="btnVib" onclick="toggleVib()">伸縮振動</button>
             </div>
-            <div id="vibControlsTri" style="display:none; display:flex; flex-direction:column; gap:5px;">
+            <div id="vibControlsTri" style="display:none; flex-direction:column; gap:5px;">
                 <button class="mode-btn" id="btnVibSym" onclick="toggleVibMode('sym')">対称伸縮</button>
                 <button class="mode-btn" id="btnVibAsym" onclick="toggleVibMode('asym')">逆対称伸縮</button>
                 <button class="mode-btn" id="btnVibBend" onclick="toggleVibMode('bend')">変角振動</button>
@@ -123,7 +123,7 @@
         </div>
     </div>
 
-    <div class="description">
+    <div class="description" style="max-width: 480px;">
         <p>分子が持つ内部エネルギーの運動モードを可視化しています。</p>
         <ul>
             <li><span class="key-point">回転運動</span>：<br>
@@ -632,6 +632,9 @@
         isDragging = false;
     });
 
+    // Initialize UI to match initial molecule type
+    setMoleculeType('diatomic');
+    
     // Start
     loop();
 
