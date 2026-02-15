@@ -32,7 +32,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 15px;
-            width: 480px;
+            width: 640px;
         }
         .control-group {
             background: #333;
@@ -89,15 +89,15 @@
     <h2>分子の内部エネルギー：回転と振動モード</h2>
     
     <div class="container">
-        <canvas id="simCanvas" width="480" height="360"></canvas>
+        <canvas id="simCanvas" width="400" height="300"></canvas>
     </div>
 
     <div class="controls">
         <div class="control-group">
             <h3>分子タイプ</h3>
             <button id="btnTypeDi" class="active" onclick="setMoleculeType('diatomic')">二原子 (N<sub>2</sub>)</button>
-            <button id="btnTypeTri" onclick="setMoleculeType('triatomic')">直線三原子 (CO<sub>2</sub>)</button>
-            <button id="btnTypeBent" onclick="setMoleculeType('bent')">非直線三原子 (H<sub>2</sub>O)</button>
+            <button id="btnTypeTri" onclick="setMoleculeType('triatomic')">直線3原子 (CO<sub>2</sub>)</button>
+            <button id="btnTypeBent" onclick="setMoleculeType('bent')">折れ線3原子 (H<sub>2</sub>O)</button>
         </div>
         <div class="control-group">
             <h3 id="rotHeader">回転 (Rotation)</h3>
@@ -123,12 +123,12 @@
         </div>
     </div>
 
-    <div class="description" style="max-width: 480px;">
+    <div class="description" style="max-width: 640px;">
         <p>分子が持つ内部エネルギーの運動モードを可視化しています。</p>
         <ul>
             <li><span class="key-point">回転運動</span>：<br>
                 直線状の分子（N<sub>2</sub>, CO<sub>2</sub>）は2つの回転自由度を持ちますが、分子軸方向（串刺し方向）の回転は慣性モーメントが無視できるためエネルギーになりません。<br>
-                一方、非直線型分子（H<sub>2</sub>O）は3つの軸すべてに対して慣性モーメントを持つため、<span class="key-point" style="color:#ffeb3b">3つの回転自由度</span>を持ちます。</li>
+                一方、折れ線3原子分子（H<sub>2</sub>O）は3つの軸すべてに対して慣性モーメントを持つため、<span class="key-point" style="color:#ffeb3b">3つの回転自由度</span>を持ちます。</li>
             <li><span class="key-point" style="color:#4caf50">振動モード</span>：<br>
                 原子間の結合がバネのように振動する運動です。多原子分子では「対称伸縮」「逆対称伸縮」「変角振動」などのモードが存在します。</li>
         </ul>
