@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>交流回路のベクトル図シミュレーター</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#fff; --line:#d8dbe0; --txt:#222; --sub:#666;
+    --cV:#d62828; --cI:#1d5fd1; --cR:#e08a00; --cL:#1f9d55; --cC:#8e44ad;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;font-size:14px}
+  header{padding:10px 16px;background:#2b3a55;color:#fff}
+  header h1{margin:0;font-size:18px;font-weight:600}
+  main{padding:8px 12px;max-width:1300px;margin:0 auto}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:8px}
+  #vizrow{gap:8px;flex-wrap:nowrap;overflow-x:auto}
+  .readout{max-width:760px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+  .ctl{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center}
+  .ctl fieldset{border:1px solid var(--line);border-radius:6px;padding:4px 10px;margin:0}
+  .ctl legend{font-size:12px;color:var(--sub);padding:0 4px}
+  label{cursor:pointer;white-space:nowrap}
+  .sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:2px 16px;margin-top:4px}
+  .sl{display:grid;grid-template-columns:4.5em 1fr 6em;align-items:center;gap:8px}
+  .sl input[type=range]{width:100%}
+  .sl .val{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .sl .val input[type=number]{width:5.2em;font-size:13px;padding:1px 3px;text-align:right}
+  .sl.off{opacity:.35}
+  canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%;height:auto}
+  button{font-size:14px;padding:4px 12px;border-radius:6px;border:1px solid #889;background:#fff;cursor:pointer}
+  button.primary{background:#2b3a55;color:#fff;border-color:#2b3a55}
+  button.on{background:#d62828;color:#fff;border-color:#d62828}
+  .readout{flex:1;min-width:300px}
+  .readout table{border-collapse:collapse;width:100%}
+  .readout td{padding:2px 6px;border-bottom:1px solid #eee;font-variant-numeric:tabular-nums}
+  .readout td:nth-child(2){text-align:right;white-space:nowrap}
+  .readout .cap{font-weight:600;background:#f1f3f6}
+  .sw{color:var(--cV)} .swI{color:var(--cI)} .swR{color:var(--cR)} .swL{color:var(--cL)} .swC{color:var(--cC)}
+  .note{color:var(--sub);font-size:12px;margin-top:6px;line-height:1.6}
+  .warn{color:#b00020;font-weight:600}
+  .buttons{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px}
+</style>
+</head>
+<body>
+<header><h1>交流回路のベクトル図シミュレーター（RLC 直列・並列）</h1></header>
+<main>
+
+<div class="panel">
+  <div class="ctl">
+    <fieldset><legend>回路の接続</legend>
+      <label><input type="radio" name="mode" value="series" checked> 直列</label>
+      <label><input type="radio" name="mode" value="parallel"> 並列</label>
+    </fieldset>
+    <fieldset><legend>配置する素子</legend>
+      <label><input type="checkbox" id="elR" checked> <span class="swR">抵抗 R</span></label>
+      <label><input type="checkbox" id="elL" checked> <span class="swL">コイル L</span></label>
+      <label><input type="checkbox" id="elC" checked> <span class="swC">コンデンサー C</span></label>
+    </fieldset>
+    <fieldset><legend>ベクトル図</legend>
+      <label><input type="radio" name="vec" value="rot" checked> 回転（ωt で回る）</label>
+      <label><input type="radio" name="vec" value="fix"> 固定（基準を水平に）</label>
+    </fieldset>
+    <fieldset><legend>表示する量</legend>
+      <label><input type="radio" name="show" value="all" checked> 素子ごと＋合成</label>
+      <label><input type="radio" name="show" value="sum"> 合成のみ</label>
+    </fieldset>
+    <fieldset><legend>過渡現象</legend>
+      <label><input type="radio" name="trans" value="off" checked> 無視（定常状態）</label>
+      <label><input type="radio" name="trans" value="on"> 計算する</label>
+    </fieldset>
+  </div>
+  <div class="sliders">
+    <div class="sl" id="slR"><span class="swR">R</span><input type="range" id="R" min="10" max="200" step="1" value="50"><span class="val" id="Rv"></span></div>
+    <div class="sl" id="slL"><span class="swL">L</span><input type="range" id="L" min="20" max="500" step="1" value="100"><span class="val" id="Lv"></span></div>
+    <div class="sl" id="slC"><span class="swC">C</span><input type="range" id="C" min="10" max="200" step="1" value="50"><span class="val" id="Cv"></span></div>
+    <div class="sl"><span>周波数 f</span><input type="range" id="f" min="20" max="500" step="1" value="100"><span class="val" id="fv"></span></div>
+    <div class="sl"><span>再生速度</span><input type="range" id="spd" min="-2" max="2" step="1" value="0"><span class="val" id="spdv"></span></div>
+  </div>
+  <div class="buttons">
+    <button id="btnSw" class="primary">スイッチを閉じる</button>
+    <button id="btnPause" disabled>一時停止</button>
+    <button id="btnZero" disabled title="次に ωt が 2π の整数倍になった瞬間に止める">ωt = 0 で停止</button>
+    <button id="btnReset">リセット</button>
+    <span class="note">電源：実効値 10 V（最大値 V₀ = 14.1 V），v = V₀ sin ωt を基準にする。回路図のスイッチをクリックしても開閉できる。</span>
+  </div>
+</div>
+
+<div class="row" id="vizrow">
+  <canvas id="circuit" width="340" height="320"></canvas>
+  <canvas id="phasor" width="330" height="320"></canvas>
+  <canvas id="wave" width="560" height="320"></canvas>
+</div>
+<div class="note" id="legendNote"></div>
+<div class="row" style="margin-top:12px">
+  <div class="panel readout" id="readout"></div>
+</div>
+
+</main>
+<script>
+(() => {
+'use strict';
+const SQ2 = Math.SQRT2, TAU = 2*Math.PI;
+const Vrms = 10, V0 = Vrms*SQ2;
+const COL = {V:'#d62828', I:'#1d5fd1', R:'#e08a00', L:'#1f9d55', C:'#8e44ad'};
+
+// ---------- state ----------
+const S = {
+  mode:'series', el:{R:true,L:true,C:true},
+  R:50, L:100e-3, C:50e-6, f:100,
+  vec:'rot', show:'all', trans:false,
+  closed:false, paused:false, speedMul:1,
+  t:0, theta:0, hist:[],
+  ode:{i:0, q:0, iL:0}, // series: i, q(電荷)  parallel: iL
+  warn:''
+};
+
+// ---------- slider mapping (対数) ----------
+function logMap(v, lo, hi){ return lo*Math.pow(hi/lo, v/1000); }
+const $ = id => document.getElementById(id);
+function fmt(x, unit, digits=3){
+  if (!isFinite(x)) return '—';
+  const a = Math.abs(x);
+  let s;
+  if (a >= 1000) s = x.toPrecision(4);
+  else if (a >= 100) s = x.toFixed(1);
+  else if (a >= 10) s = x.toFixed(2);
+  else s = x.toFixed(digits);
+  return s + (unit ? ' ' + unit : '');
+}
+function readSliders(){
+  S.R = +$('R').value;
+  S.L = +$('L').value*1e-3;
+  S.C = +$('C').value*1e-6;
+  S.f = +$('f').value;
+  S.speedMul = Math.pow(2, +$('spd').value);
+  $('Rv').textContent = S.R.toFixed(0)+' Ω';
+  $('Lv').textContent = (S.L*1e3).toFixed(0)+' mH';
+  $('Cv').textContent = (S.C*1e6).toFixed(0)+' μF';
+  $('fv').textContent = S.f.toFixed(0)+' Hz';
+  $('spdv').textContent = (S.speedMul>=1? S.speedMul : '1/'+(1/S.speedMul)) + ' ×';
+}
+['R','L','C','f','spd'].forEach(id => $(id).addEventListener('input', readSliders));
+readSliders();
+
+document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', e => { S.mode = e.target.value; resetSim(); }));
+document.querySelectorAll('input[name=vec]').forEach(r => r.addEventListener('change', e => S.vec = e.target.value));
+document.querySelectorAll('input[name=show]').forEach(r => r.addEventListener('change', e => S.show = e.target.value));
+document.querySelectorAll('input[name=trans]').forEach(r => r.addEventListener('change', e => { S.trans = (e.target.value==='on'); resetSim(); }));
+['R','L','C'].forEach(k => $('el'+k).addEventListener('change', e => { S.el[k] = e.target.checked; $('sl'+k).classList.toggle('off', !e.target.checked); resetSim(); }));
+
+$('btnSw').addEventListener('click', toggleSwitch);
+$('btnPause').addEventListener('click', () => { S.paused = !S.paused; S.stopAtZero=false; updateButtons(); });
+$('btnZero').addEventListener('click', () => { S.stopAtZero = true; S.paused = false; updateButtons(); });
+$('btnReset').addEventListener('click', () => { S.closed=false; resetSim(); });
+
+function anyElement(){ return S.el.R || S.el.L || S.el.C; }
+function toggleSwitch(){
+  if (!S.closed && !anyElement()) return;
+  S.closed = !S.closed;
+  if (!S.closed) resetSim(); else { S.paused=false; }
+  updateButtons();
+}
+function resetSim(){
+  S.t=0; S.theta=0; S.hist=[]; S.ode={i:0,q:0,iL:0}; S.paused=false; S.stopAtZero=false;
+  if (!anyElement()) S.closed=false;
+  updateButtons();
+}
+function updateButtons(){
+  $('btnSw').textContent = S.closed ? 'スイッチを開く' : 'スイッチを閉じる';
+  $('btnSw').classList.toggle('on', S.closed);
+  $('btnSw').disabled = !S.closed && !anyElement();
+  $('btnPause').disabled = !S.closed;
+  $('btnZero').disabled = !S.closed;
+  $('btnZero').classList.toggle('on', !!S.stopAtZero);
+  $('btnPause').textContent = S.paused ? '再開' : '一時停止';
+}
+updateButtons();
+
+// ---------- 定常解 ----------
+// 各量 q(t) = amp * sin(theta + ph)   （電源 v = V0 sin theta が基準）
+function steady(){
+  const w = TAU*S.f;
+  const XL = S.el.L ? w*S.L : 0;
+  const XC = S.el.C ? 1/(w*S.C) : 0;
+  const R  = S.el.R ? S.R : 0;
+  const o = {w, XL, XC, R, vec:[], warn:''};
+  if (S.mode==='series'){
+    const X = XL - XC;
+    const Z = Math.hypot(R, X);
+    const phi = Math.atan2(X, R);          // 電圧が電流より phi 進む
+    const I0 = Z>1e-9 ? V0/Z : Infinity;
+    o.Z = Z; o.phi = phi; o.I0 = I0; o.phiI = -phi;
+    if (!isFinite(I0) || Z < 0.05) o.warn = 'Z がほぼ 0（直列共振で R なし）：電流が発散します。';
+    const I = isFinite(I0) ? I0 : 0;
+    o.ref = {key:'I', name:'I', amp:I, ph:-phi, kind:'I', col:COL.I};
+    if (S.el.R) o.vec.push({key:'R', name:'V_R', amp:R*I,  ph:-phi,          kind:'V', col:COL.R});
+    if (S.el.L) o.vec.push({key:'L', name:'V_L', amp:XL*I, ph:-phi+Math.PI/2, kind:'V', col:COL.L});
+    if (S.el.C) o.vec.push({key:'C', name:'V_C', amp:XC*I, ph:-phi-Math.PI/2, kind:'V', col:COL.C});
+    o.sum = {key:'V', name:'V', amp:V0, ph:0, kind:'V', col:COL.V};
+  } else {
+    const gR = S.el.R ? 1/R : 0, bL = S.el.L ? 1/XL : 0, bC = S.el.C ? 1/XC : 0;
+    const B = bC - bL;
+    const Y = Math.hypot(gR, B);
+    const phiI = Math.atan2(B, gR);        // 電流が電圧より phiI 進む
+    o.Y = Y; o.Z = Y>1e-12 ? 1/Y : Infinity; o.phi = -phiI; o.phiI = phiI; o.I0 = V0*Y;
+    o.ref = {key:'V', name:'V', amp:V0, ph:0, kind:'V', col:COL.V};
+    if (S.el.R) o.vec.push({key:'R', name:'I_R', amp:V0*gR, ph:0,           kind:'I', col:COL.R});
+    if (S.el.L) o.vec.push({key:'L', name:'I_L', amp:V0*bL, ph:-Math.PI/2,  kind:'I', col:COL.L});
+    if (S.el.C) o.vec.push({key:'C', name:'I_C', amp:V0*bC, ph:+Math.PI/2,  kind:'I', col:COL.C});
+    o.sum = {key:'I', name:'I', amp:V0*Y, ph:phiI, kind:'I', col:COL.I};
+  }
+  o.f0 = (S.el.L && S.el.C) ? 1/(TAU*Math.sqrt(S.L*S.C)) : null;
+  return o;
+}
+function steadyValues(st, theta){
+  const v = {};
+  v[st.ref.key] = st.ref.amp*Math.sin(theta+st.ref.ph);
+  v[st.sum.key] = st.sum.amp*Math.sin(theta+st.sum.ph);
+  st.vec.forEach(e => v[e.key] = e.amp*Math.sin(theta+e.ph));
+  return v;
+}
+
+// ---------- 過渡解（数値積分） ----------
+function advance(dt){ // シミュレーション時間 dt だけ進める
+  const w = TAU*S.f;
+  if (!S.trans){ S.theta += w*dt; S.t += dt; return; }
+  // 安定な刻み
+  let h = dt;
+  if (S.mode==='series'){
+    if (S.el.L){
+      let hmax = 1/(w*40);
+      if (S.el.R) hmax = Math.min(hmax, (S.L/S.R)/4);
+      if (S.el.C) hmax = Math.min(hmax, Math.sqrt(S.L*S.C)/10);
+      const n = Math.min(4000, Math.max(1, Math.ceil(dt/hmax)));
+      h = dt/n;
+      const f = (th, i, q) => {
+        const v = V0*Math.sin(th);
+        const di = (v - (S.el.R? S.R*i:0) - (S.el.C? q/S.C:0))/S.L;
+        return [di, i];
+      };
+      let {i,q} = S.ode, th = S.theta;
+      for (let k=0;k<n;k++){
+        const k1=f(th,i,q), k2=f(th+w*h/2,i+h/2*k1[0],q+h/2*k1[1]),
+              k3=f(th+w*h/2,i+h/2*k2[0],q+h/2*k2[1]), k4=f(th+w*h,i+h*k3[0],q+h*k3[1]);
+        i += h/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]);
+        q += h/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1]);
+        th += w*h;
+      }
+      S.ode.i=i; S.ode.q=q; S.theta=th;
+    } else if (S.el.R && S.el.C){
+      const tau = S.R*S.C;
+      const n = Math.min(4000, Math.max(1, Math.ceil(dt/Math.min(tau/4, 1/(w*40)))));
+      h = dt/n;
+      const f = (th,q) => (V0*Math.sin(th) - q/S.C)/S.R;
+      let q = S.ode.q, th = S.theta;
+      for (let k=0;k<n;k++){
+        const k1=f(th,q), k2=f(th+w*h/2,q+h/2*k1), k3=f(th+w*h/2,q+h/2*k2), k4=f(th+w*h,q+h*k3);
+        q += h/6*(k1+2*k2+2*k3+k4); th += w*h;
+      }
+      S.ode.q=q; S.theta=th;
+    } else {
+      S.theta += w*dt;   // R のみ，C のみ：過渡なし（解析的）
+    }
+  } else {
+    // 並列：各枝は独立．L 枝のみ積分（di/dt = v/L）
+    if (S.el.L){
+      const n = Math.min(4000, Math.max(1, Math.ceil(dt/(1/(w*40)))));
+      h = dt/n;
+      let iL = S.ode.iL, th = S.theta;
+      const f = th => V0*Math.sin(th)/S.L;
+      for (let k=0;k<n;k++){
+        const k1=f(th), k2=f(th+w*h/2), k4=f(th+w*h);
+        iL += h/6*(k1+4*k2+k4); th += w*h;
+      }
+      S.ode.iL=iL; S.theta=th;
+    } else S.theta += w*dt;
+  }
+  S.t += dt;
+}
+function currentValues(st){
+  if (!S.trans) return steadyValues(st, S.theta);
+  const w = TAU*S.f, th = S.theta, v = V0*Math.sin(th);
+  const out = {};
+  if (S.mode==='series'){
+    let i, vR=0, vL=0, vC=0;
+    if (S.el.L){
+      i = S.ode.i; vC = S.el.C ? S.ode.q/S.C : 0; vR = S.el.R ? S.R*i : 0; vL = v - vR - vC;
+    } else if (S.el.R && S.el.C){
+      vC = S.ode.q/S.C; vR = v - vC; i = vR/S.R;
+    } else if (S.el.R){ i = v/S.R; vR = v; }
+    else if (S.el.C){ i = S.C*V0*w*Math.cos(th); vC = v; }
+    else i = 0;
+    out.I = i; out.V = v;
+    if (S.el.R) out.R = vR; if (S.el.L) out.L = vL; if (S.el.C) out.C = vC;
+  } else {
+    let iR = S.el.R ? v/S.R : 0, iL = S.el.L ? S.ode.iL : 0, iC = S.el.C ? S.C*V0*w*Math.cos(th) : 0;
+    out.V = v; out.I = iR+iL+iC;
+    if (S.el.R) out.R = iR; if (S.el.L) out.L = iL; if (S.el.C) out.C = iC;
+  }
+  return out;
+}
+
+// ---------- 時間の進め方 ----------
+// 1周期の再生時間（実時間）：clamp(300/f, 1, 10) 秒 × (1/再生速度)
+function secPerPeriod(){ return Math.min(10, Math.max(1, 300/S.f)) / S.speedMul; }
+let lastReal = null;
+function step(realDt){
+  if (!S.closed || S.paused) return;
+  const T = 1/S.f;
+  const simDt = realDt * T / secPerPeriod();          // 進めるシミュレーション時間
+  const ds = T/240;                                   // 記録の刻み
+  const m = Math.max(1, Math.ceil(simDt/ds));
+  const h = simDt/m;
+  const st = steady();
+  const w = TAU*S.f;
+  for (let k=0;k<m;k++){
+    let hh = h, hit = false;
+    if (S.stopAtZero){
+      const next = Math.ceil((S.theta + 1e-9)/TAU)*TAU;   // 次の 2π の整数倍
+      if (S.theta + w*h >= next){ hh = (next - S.theta)/w; hit = true; }
+    }
+    advance(hh);
+    if (hit){ S.theta = Math.round(S.theta/TAU)*TAU; }
+    const val = currentValues(st);
+    S.hist.push({t:S.t, th:S.theta, val});
+    if (hit){ S.paused = true; S.stopAtZero = false; updateButtons(); break; }
+  }
+  if (S.hist.length > 6000) S.hist.splice(0, S.hist.length-6000);
+}
+
+// ---------- 描画：回路図 ----------
+const cc = $('circuit'), cctx = cc.getContext('2d');
+let swBox = null;
+function drawCircuit(){
+  const ctx = cctx, W = cc.width, H = cc.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.lineWidth = 2; ctx.strokeStyle = '#222'; ctx.fillStyle='#222';
+  ctx.font = '14px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const x0=52, x1=W-24, y0=44, y1=H-44;
+  const els = ['R','L','C'].filter(k => S.el[k]);
+  // 電源（左辺）
+  const ym = (y0+y1)/2;
+  line(ctx, x0,y0, x0,ym-18); line(ctx, x0,ym+18, x0,y1);
+  ctx.beginPath(); ctx.arc(x0,ym,18,0,TAU); ctx.stroke();
+  ctx.beginPath(); for (let k=0;k<=20;k++){ const u=k/20; const px=x0-11+22*u, py=ym-7*Math.sin(u*TAU); k?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.stroke();
+  ctx.fillStyle=COL.V; ctx.fillText('v = V₀ sin ωt', x0+14, ym+34); ctx.fillStyle='#222';
+  // スイッチ（上辺左）
+  const sx = x0+36;
+  line(ctx, x0,y0, sx,y0);
+  ctx.beginPath(); ctx.arc(sx,y0,3,0,TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(sx+40,y0,3,0,TAU); ctx.fill();
+  if (S.closed) line(ctx, sx,y0, sx+40,y0); else line(ctx, sx,y0, sx+36,y0-16);
+  swBox = {x:sx-8, y:y0-26, w:56, h:36};
+  ctx.fillStyle='#666'; ctx.font='11px sans-serif'; ctx.fillText(S.closed?'閉':'開', sx+20, y0-22); ctx.font='14px sans-serif'; ctx.fillStyle='#222';
+  const sxe = sx+40;
+  if (S.mode==='series'){
+    // 上辺に素子を並べる
+    const seg = (x1 - sxe) / 3;
+    let x = sxe;
+    ['R','L','C'].forEach(k => {
+      if (S.el[k]){ drawElement(ctx, k, x, x+seg, y0, 'h'); }
+      else line(ctx, x, y0, x+seg, y0);
+      x += seg;
+    });
+    line(ctx, x1,y0, x1,y1); line(ctx, x1,y1, x0,y1);
+    // 電流の向き
+    arrowH(ctx, (x0+x1)/2-20, y1+14, (x0+x1)/2+20, y1+14, COL.I); ctx.fillStyle=COL.I; ctx.fillText('i', (x0+x1)/2, y1+26); ctx.fillStyle='#222';
+    if (els.length===0){ ctx.fillStyle='#b00020'; ctx.fillText('素子を選んでください', (x0+x1)/2, ym); }
+  } else {
+    line(ctx, sxe,y0, x1,y0); line(ctx, x0,y1, x1,y1);
+    const n = els.length;
+    if (n===0){ ctx.fillStyle='#b00020'; ctx.fillText('素子を選んでください', (sxe+x1)/2, ym); }
+    const xs = els.map((k,j) => sxe + (x1-sxe)*(j+1)/(n+1));
+    els.forEach((k,j) => drawElement(ctx, k, y0, y1, xs[j], 'v'));
+    arrowH(ctx, sxe+8, y0-14, sxe+44, y0-14, COL.I); ctx.fillStyle=COL.I; ctx.fillText('i', sxe+26, y0-27); ctx.fillStyle='#222';
+  }
+}
+function line(ctx,a,b,c,d){ ctx.beginPath(); ctx.moveTo(a,b); ctx.lineTo(c,d); ctx.stroke(); }
+function arrowH(ctx,x0,y0,x1,y1,col){ ctx.save(); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.5; line(ctx,x0,y0,x1,y1);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1-8,y1-4); ctx.lineTo(x1-8,y1+4); ctx.closePath(); ctx.fill(); ctx.restore(); }
+// 素子を a→b（水平なら x 範囲，垂直なら y 範囲）の中央に描く
+function drawElement(ctx, k, a, b, c, dir){
+  const len = 34, mid = (a+b)/2, s = mid-len/2, e = mid+len/2;
+  const col = COL[k];
+  const P = (u,vv) => dir==='h' ? [u, c+vv] : [c+vv, u];
+  ctx.save(); ctx.strokeStyle='#222';
+  line(ctx, ...P(a,0), ...P(s,0)); line(ctx, ...P(e,0), ...P(b,0));
+  ctx.strokeStyle = col; ctx.lineWidth = 2.2;
+  if (k==='R'){
+    ctx.beginPath(); const p1=P(s,-8), p2=P(e,8); ctx.rect(Math.min(p1[0],p2[0]),Math.min(p1[1],p2[1]),Math.abs(p2[0]-p1[0]),Math.abs(p2[1]-p1[1])); ctx.stroke();
+  } else if (k==='L'){
+    ctx.beginPath(); const nb=4, bw=len/nb;
+    for (let j=0;j<nb;j++){ const cx=s+bw*(j+0.5); const [px,py]=P(cx,0);
+      if (dir==='h') ctx.arc(px,py,bw/2,Math.PI,0,false); else ctx.arc(px,py,bw/2,-Math.PI/2,Math.PI/2,false); }
+    ctx.stroke();
+  } else {
+    line(ctx, ...P(mid-4,-12), ...P(mid-4,12)); line(ctx, ...P(mid+4,-12), ...P(mid+4,12));
+    ctx.strokeStyle='#222'; ctx.lineWidth=2; line(ctx, ...P(s,0), ...P(mid-4,0)); line(ctx, ...P(mid+4,0), ...P(e,0));
+  }
+  ctx.fillStyle = col; ctx.font='bold 14px sans-serif';
+  const lab = k; const [lx,ly] = dir==='h' ? [mid, c-24] : [c-24, mid];
+  ctx.fillText(lab, lx, ly);
+  ctx.restore();
+}
+cc.addEventListener('click', ev => {
+  const r = cc.getBoundingClientRect(); const x=(ev.clientX-r.left)*cc.width/r.width, y=(ev.clientY-r.top)*cc.height/r.height;
+  if (swBox && x>=swBox.x && x<=swBox.x+swBox.w && y>=swBox.y && y<=swBox.y+swBox.h) toggleSwitch();
+});
+
+// ---------- 描画：ベクトル図 ----------
+const pc = $('phasor'), pctx = pc.getContext('2d');
+const wc = $('wave'), wctx = wc.getContext('2d');
+const CY = 170;            // 両キャンバス共通の中心 y
+const RAD = 118;           // 最大矢印長 [px]
+function scales(st){
+  let vmax = V0, imax = 0;
+  const all = [st.ref, st.sum, ...st.vec];
+  all.forEach(e => { if (e.kind==='V') vmax=Math.max(vmax,e.amp); else imax=Math.max(imax,e.amp); });
+  if (S.trans && S.hist.length){ // 過渡解が定常振幅を超える場合は縮尺を広げる
+    const keys = all.map(e=>e.key), kinds = all.map(e=>e.kind);
+    for (let k=Math.max(0,S.hist.length-3000); k<S.hist.length; k++){ const v=S.hist[k].val;
+      for (let j=0;j<keys.length;j++){ const a=Math.abs(v[keys[j]]||0); if (kinds[j]==='V') vmax=Math.max(vmax,a); else imax=Math.max(imax,a); } }
+  }
+  if (!isFinite(vmax)||vmax<=0) vmax=V0; if (!isFinite(imax)||imax<=0) imax=1;
+  return {sV: RAD/vmax, sI: RAD/imax};
+}
+function arrow(ctx, x0,y0, x1,y1, col, w=2.5, dashed=false){
+  ctx.save(); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=w; if (dashed) ctx.setLineDash([5,4]);
+  line(ctx,x0,y0,x1,y1); ctx.setLineDash([]);
+  const L=Math.hypot(x1-x0,y1-y0); if (L>6){ const ux=(x1-x0)/L, uy=(y1-y0)/L, hl=10, hw=5;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1-hl*ux+hw*uy, y1-hl*uy-hw*ux); ctx.lineTo(x1-hl*ux-hw*uy, y1-hl*uy+hw*ux); ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+function drawPhasor(st, val){
+  const ctx = pctx, W = pc.width, cx = 165, cy = CY;
+  ctx.clearRect(0,0,W,pc.height);
+  ctx.strokeStyle='#ccc'; ctx.lineWidth=1; line(ctx,cx-155,cy,cx+155,cy); line(ctx,cx,cy-140,cx,cy+140);
+  ctx.fillStyle='#888'; ctx.font='12px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText(S.vec==='rot' ? '回転ベクトル図（縦軸への射影 ＝ 瞬時値）' : '固定ベクトル図（基準 '+st.ref.name+' を水平に）', 8, 6);
+  if (!S.closed) { ctx.fillText('スイッチを閉じると表示されます', 8, 24); return; }
+  const {sV,sI} = scales(st);
+  const rot = S.vec==='rot';
+  const base = rot ? S.theta : -st.ref.ph;    // 固定なら基準の位相を 0 に
+  const ang = e => base + e.ph;
+  const tip = e => { const r = (e.kind==='V'? sV : sI)*e.amp, a = ang(e); return [cx + r*Math.cos(a), cy - r*Math.sin(a)]; };
+  // 補助円
+  ctx.strokeStyle='#eee'; ctx.beginPath(); ctx.arc(cx,cy,RAD,0,TAU); ctx.stroke();
+  // 基準
+  const tr = tip(st.ref);
+  // 素子ごと：原点からの矢印＋つなぎ（頭→尾）
+  if (S.show==='all'){
+    let px=cx, py=cy;
+    st.vec.forEach(e => { const [tx,ty]=tip(e); const dx=tx-cx, dy=ty-cy;
+      ctx.save(); ctx.strokeStyle=e.col; ctx.globalAlpha=.5; ctx.setLineDash([4,4]); ctx.lineWidth=1.5; line(ctx,px,py,px+dx,py+dy); ctx.restore();
+      px+=dx; py+=dy; });
+    st.vec.forEach(e => { const [tx,ty]=tip(e); arrow(ctx,cx,cy,tx,ty,e.col,2.2); label(ctx,e.name,tx,ty,e.col); });
+  }
+  const ts = tip(st.sum);
+  arrow(ctx,cx,cy,tr[0],tr[1],st.ref.col,3.2); label(ctx,st.ref.name,tr[0],tr[1],st.ref.col,true);
+  arrow(ctx,cx,cy,ts[0],ts[1],st.sum.col,3.2); label(ctx,st.sum.name,ts[0],ts[1],st.sum.col);
+  // 位相差の弧（V と I の間）
+  const aV = ang(st.ref.kind==='V'?st.ref:st.sum), aI = ang(st.ref.kind==='I'?st.ref:st.sum);
+  if (Math.abs(st.phi) > 0.01 && isFinite(st.phi)){
+    ctx.save(); ctx.strokeStyle='#333'; ctx.lineWidth=1.2; ctx.beginPath();
+    ctx.arc(cx,cy,28, -aV, -aI, st.phi<0); ctx.stroke();
+    const am = (aV+aI)/2; ctx.fillStyle='#333'; ctx.font='13px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('φ', cx+40*Math.cos(am), cy-40*Math.sin(am)); ctx.restore();
+  }
+  // 射影（回転のとき）：縦軸に落とし，右端まで案内線
+  if (rot){
+    [[st.sum,ts],[st.ref,tr]].forEach(([e,t]) => { ctx.save(); ctx.strokeStyle=e.col; ctx.setLineDash([3,4]); ctx.lineWidth=1;
+      line(ctx,t[0],t[1],cx,t[1]); line(ctx,t[0],t[1],W,t[1]); ctx.restore();
+      ctx.save(); ctx.fillStyle=e.col; ctx.beginPath(); ctx.arc(cx,t[1],3.5,0,TAU); ctx.fill(); ctx.restore(); });
+    ctx.fillStyle='#666'; ctx.font='12px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='bottom';
+    ctx.fillText('ωt = '+ (S.theta*180/Math.PI % 360).toFixed(0) + '°', W-8, pc.height-6);
+  }
+  ctx.fillStyle='#888'; ctx.font='11px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+  ctx.fillText('縮尺：電圧 '+fmt(RAD/sV,'V',2)+' ／ 電流 '+fmt(RAD/sI,'A',3)+' ＝ 円の半径', 8, pc.height-6);
+}
+function label(ctx,txt,x,y,col,side){ ctx.save(); ctx.fillStyle=col; ctx.font='bold 14px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const cx=165, cy=CY, dx=x-cx, dy=y-cy, L=Math.hypot(dx,dy)||1; const ox = side? -12*dy/L : 0, oy = side? 12*dx/L : 0;
+  ctx.fillText(txt.replace('_',''), x+14*dx/L+ox, y+14*dy/L+oy); ctx.restore(); }
+
+// ---------- 描画：波形 ----------
+function drawWave(st, val){
+  const ctx = wctx, W = wc.width, H = wc.height, cy = CY;
+  ctx.clearRect(0,0,W,H);
+  const xL = 44, xR = W-44, pw = xR-xL;
+  const {sV,sI} = scales(st);
+  // 軸
+  ctx.strokeStyle='#ccc'; ctx.lineWidth=1; line(ctx,xL,cy,xR,cy); line(ctx,xL,cy-140,xL,cy+140); line(ctx,xR,cy-140,xR,cy+140);
+  ctx.font='11px sans-serif'; ctx.fillStyle=COL.V; ctx.textAlign='right'; ctx.textBaseline='middle';
+  const vt = niceTick(RAD/sV), it = niceTick(RAD/sI);
+  for (let k=-3;k<=3;k++){ const y=cy-k*vt*sV; if (Math.abs(y-cy)<=RAD+14){ ctx.fillStyle=COL.V; ctx.fillText((k*vt).toFixed(vt<1?2:vt<10?1:0)+' V', xL-4, y); ctx.strokeStyle='#eee'; line(ctx,xL,y,xR,y);} }
+  ctx.textAlign='left';
+  for (let k=-3;k<=3;k++){ const y=cy-k*it*sI; if (Math.abs(y-cy)<=RAD+14){ ctx.fillStyle=COL.I; ctx.fillText((k*it).toPrecision(2)+' A', xR+4, y);} }
+  ctx.fillStyle='#888'; ctx.font='12px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+  const T = 1/S.f, win = 2*T;
+  ctx.fillText('波形（右端が現在，幅 2周期 ＝ '+fmt(win*1e3,'ms',2)+'）'+(S.trans?'　実線：実際　破線：定常':''), xL+2, 6);
+  ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText('t →', xR, H-6);
+  if (!S.closed || S.hist.length<2) return;
+  const tNow = S.t, t0 = tNow - win;
+  const xs = t => xL + (t - t0)/win*pw;
+  const series = [];
+  if (S.show==='all') st.vec.forEach(e => series.push(e));
+  series.push(st.ref, st.sum);
+  const start = Math.max(0, S.hist.findIndex(h => h.t >= t0));
+  series.forEach(e => {
+    const sc = e.kind==='V'? sV : sI;
+    const bold = (e.key==='V'||e.key==='I');
+    // 定常解（破線）：過渡モードのとき
+    if (S.trans){ ctx.save(); ctx.strokeStyle=e.col; ctx.globalAlpha=.55; ctx.setLineDash([6,4]); ctx.lineWidth=1.2; ctx.beginPath();
+      for (let k=start;k<S.hist.length;k++){ const h=S.hist[k]; const y=cy-sc*e.amp*Math.sin(h.th+e.ph); k===start?ctx.moveTo(xs(h.t),y):ctx.lineTo(xs(h.t),y);} ctx.stroke(); ctx.restore(); }
+    ctx.save(); ctx.strokeStyle=e.col; ctx.lineWidth= bold?2.6:1.6; ctx.beginPath();
+    for (let k=start;k<S.hist.length;k++){ const h=S.hist[k]; const y=cy-sc*(h.val[e.key]||0); k===start?ctx.moveTo(xs(h.t),y):ctx.lineTo(xs(h.t),y);} ctx.stroke(); ctx.restore();
+    // 現在値の点とラベル
+    const y = cy - sc*(val[e.key]||0);
+    ctx.save(); ctx.fillStyle=e.col; ctx.beginPath(); ctx.arc(xR,y,3.5,0,TAU); ctx.fill();
+    if (S.vec==='rot' && bold){ ctx.setLineDash([3,4]); ctx.strokeStyle=e.col; ctx.lineWidth=1; line(ctx,0,y,xR,y); }
+    ctx.restore();
+  });
+  // 凡例
+  ctx.font='12px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top'; let lx = xL+2;
+  series.forEach(e => { ctx.fillStyle=e.col; const s=e.name.replace('_',''); ctx.fillText('— '+s, lx, 22); lx += ctx.measureText('— '+s).width+14; });
+}
+function niceTick(maxv){ const p=Math.pow(10,Math.floor(Math.log10(maxv))); const m=maxv/p; return (m>=5?2:m>=2?1:0.5)*p; }
+
+// ---------- 数値表示 ----------
+const ro = $('readout');
+function drawReadout(st, val){
+  const deg = x => (x*180/Math.PI).toFixed(1)+'°';
+  const rows = [];
+  const cap = s => rows.push(`<tr class="cap"><td colspan=2>${s}</td></tr>`);
+  const row = (a,b,cls='') => rows.push(`<tr><td class="${cls}">${a}</td><td>${b}</td></tr>`);
+  cap('回路定数');
+  row('角周波数 ω = 2πf', fmt(st.w,'rad/s'));
+  if (S.el.L) row('誘導リアクタンス X<sub>L</sub> = ωL', fmt(st.XL,'Ω'),'swL');
+  if (S.el.C) row('容量リアクタンス X<sub>C</sub> = 1/(ωC)', fmt(st.XC,'Ω'),'swC');
+  if (S.el.R) row('抵抗 R', fmt(st.R,'Ω'),'swR');
+  if (st.f0) row('共振周波数 f₀ = 1/(2π√(LC))', fmt(st.f0,'Hz'));
+  cap(S.mode==='series' ? '直列：インピーダンス' : '並列：アドミタンス');
+  if (S.mode==='series'){
+    row('|Z| = √(R² + (X<sub>L</sub> − X<sub>C</sub>)²)', fmt(st.Z,'Ω'));
+  } else {
+    row('|Y| = √((1/R)² + (1/X<sub>C</sub> − 1/X<sub>L</sub>)²)', fmt(st.Y,'S'));
+    row('|Z| = 1/|Y|', fmt(st.Z,'Ω'));
+  }
+  const lead = st.phiI > 1e-6 ? '電流が電圧より進む' : st.phiI < -1e-6 ? '電流が電圧より遅れる' : '同位相';
+  row('位相差 φ（電圧 − 電流）', deg(st.phi)+'　'+lead);
+  cap('振幅（最大値）');
+  row('<span class="sw">電源電圧 V₀</span>', fmt(V0,'V'));
+  row('<span class="swI">電流 I₀</span>', fmt(st.I0,'A'));
+  st.vec.forEach(e => row(`<span style="color:${e.col}">${e.name.replace('_','<sub>')+(e.name.includes('_')?'</sub>':'')}</span> の最大値`, fmt(e.amp, e.kind==='V'?'V':'A')));
+  cap('瞬時値');
+  row('ωt', S.closed ? deg(S.theta % TAU) + '　（t = '+fmt(S.t*1e3,'ms',2)+'）' : '—');
+  row('<span class="sw">v</span>', S.closed ? fmt(val.V,'V') : '—');
+  row('<span class="swI">i</span>', S.closed ? fmt(val.I,'A') : '—');
+  let html = `<table>${rows.join('')}</table>`;
+  if (st.warn) html += `<div class="warn">${st.warn}</div>`;
+  if (S.trans && S.mode==='parallel' && S.el.L) html += `<div class="note">並列のコイル枝は抵抗がないため，スイッチを閉じた瞬間の初期条件による直流成分（i<sub>L</sub> のオフセット）が減衰せずに残ります。</div>`;
+  if (S.trans && S.mode==='series' && S.el.L && S.el.C && !S.el.R) html += `<div class="note">直列 LC（R なし）では減衰がないため，過渡解は定常解に落ち着きません。</div>`;
+  ro.innerHTML = html;
+}
+$('legendNote').innerHTML = '色：<span class="sw">■ 電源電圧 V</span>　<span class="swI">■ 電流 I</span>　<span class="swR">■ R の量</span>　<span class="swL">■ L の量</span>　<span class="swC">■ C の量</span>　'
+ + '直列では電流 I を基準に各素子の電圧を，並列では電圧 V を基準に各素子の電流をベクトルで表す。電圧と電流は縮尺が異なる（各ベクトル図の左下に表示）。'
+ + '再生速度は 1周期 ＝ 1〜10 秒（100 Hz で 3 秒，30 Hz 以下で 10 秒，300 Hz 以上で 1 秒）を基準にしている。';
+
+// ---------- ループ ----------
+function frame(ts){
+  if (lastReal===null) lastReal = ts;
+  const realDt = Math.min(0.1, (ts-lastReal)/1000); lastReal = ts;
+  step(realDt);
+  const st = steady();
+  const val = S.closed ? (S.hist.length ? S.hist[S.hist.length-1].val : currentValues(st)) : {};
+  drawCircuit(); drawPhasor(st,val); drawWave(st,val); drawReadout(st,val);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
