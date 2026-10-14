@@ -22,8 +22,8 @@ h2{font-size:1rem;margin:0 0 8px}
 .seg{display:inline-flex;background:#e6e9f0;border-radius:12px;padding:3px}
 .seg button{border:0;background:transparent;padding:8px 16px;border-radius:9px;font-weight:600;color:var(--sub);min-height:42px}
 .seg button[aria-pressed="true"]{background:var(--card);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.15)}
-.seg.small button{padding:4px 12px;min-height:36px;font-size:.9rem}
-.card{background:var(--card);border-radius:16px;padding:14px;box-shadow:0 1px 2px rgba(20,30,60,.06),0 0 0 1px var(--line)}
+.seg.small button{padding:3px 10px;min-height:32px;font-size:.84rem}
+.card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 1px 2px rgba(20,30,60,.06),0 0 0 1px var(--line)}
 .main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;align-items:start}
 @media (max-width:860px){.main{grid-template-columns:1fr}}
 body.auto .lock{pointer-events:none;opacity:.55}
@@ -57,20 +57,20 @@ body.auto .lock{pointer-events:none;opacity:.55}
 .switch[aria-pressed="true"]{background:var(--pos);color:#fff;box-shadow:0 2px 8px rgba(224,49,49,.4)}
 
 /* 右パネル */
-.side{display:flex;flex-direction:column;gap:14px}
-.steps{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.steps span{font-size:.8rem;padding:3px 10px;border-radius:99px;background:#eef1f6;color:var(--sub);font-weight:600}
+.side{display:flex;flex-direction:column;gap:12px}
+.steps{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.steps span{font-size:.74rem;padding:2px 9px;border-radius:99px;background:#eef1f6;color:var(--sub);font-weight:600}
 .steps span.now{background:var(--accent);color:#fff}
 .steps span.done{background:#d3f9d8;color:var(--good)}
-.msg{font-weight:600;min-height:3.2em}
-.note{font-size:.85rem;color:var(--warn);min-height:1.4em;font-weight:600}
-.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.btn{border:0;border-radius:12px;padding:10px 16px;min-height:48px;font-weight:700;background:#eef1f6;box-shadow:inset 0 0 0 1px var(--line)}
+.msg{font-weight:600;min-height:2.6em;font-size:.92rem;line-height:1.45}
+.note{font-size:.82rem;color:var(--warn);min-height:1.3em;font-weight:600}
+.btnrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.btn{border:0;border-radius:10px;padding:7px 12px;min-height:40px;font-size:.92rem;font-weight:700;background:#eef1f6;box-shadow:inset 0 0 0 1px var(--line)}
 .btn.primary{background:var(--accent);color:#fff;box-shadow:none}
 .btn.auto{background:#fff3bf;color:#7a4b00;box-shadow:inset 0 0 0 1px #ffd43b}
 .btn.ghost{background:transparent;min-height:40px;padding:6px 12px;font-size:.88rem;color:var(--accent)}
 .btn:disabled{opacity:.4;cursor:default}
-.opts{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-top:10px;font-size:.9rem;color:var(--sub)}
+.opts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:6px;font-size:.84rem;color:var(--sub)}
 .opts label{display:inline-flex;align-items:center;gap:6px}
 .opts input[type=checkbox]{width:20px;height:20px}
 
@@ -97,12 +97,12 @@ td.ok{color:var(--good);font-weight:700} td.ng{color:var(--warn);font-weight:700
 tr.new td{animation:flash 1.6s ease-out}
 .empty{padding:18px;text-align:center;color:var(--sub);font-size:.9rem}
 .hd{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-#numline{width:100%;height:auto;display:block}
+#numline{width:100%;height:auto;display:block;max-height:34vh}
 .legend{display:flex;gap:14px;font-size:.8rem;color:var(--sub);margin-top:2px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
-.est{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;font-weight:700}
-.est input{width:6.2em;font:inherit;font-weight:800;font-size:1.15rem;padding:8px 10px;border-radius:10px;border:2px solid var(--accent);text-align:right;color:var(--accent);background:#fff}
-.estout{margin-top:8px;font-size:.92rem;min-height:1.6em}
+.est{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px;font-weight:700;font-size:.95rem}
+.est input{width:5.6em;font:inherit;font-weight:800;font-size:1.1rem;padding:6px 10px;border-radius:10px;border:2px solid var(--accent);text-align:right;color:var(--accent);background:#fff}
+.estout{margin-top:6px;font-size:.88rem;min-height:1.5em}
 details{margin-top:10px;font-size:.9rem;color:var(--sub)}
 details summary{cursor:pointer;font-weight:700;color:var(--ink);padding:6px 0}
 details p{margin:.4em 0}
@@ -174,13 +174,32 @@ details p{margin:.4em 0}
           <label><input type="checkbox" id="forceChk"> 力の矢印</label>
         </div>
       </section>
-
       <section class="card">
-        <h2>選んだ油滴の測定値（自動計算）</h2>
-        <div class="reads" id="reads"></div>
-        <div class="chartbox"><canvas id="chart"></canvas></div>
-        <div class="cap">油滴の高さ − 時間グラフ（直近20秒）。傾きが一定＝終端速度，水平＝静止。</div>
+        <h2>油滴の電荷の分布　<span class="cap">（1つの点＝1回の測定）</span></h2>
+        <svg id="numline" viewBox="0 0 700 190" role="img" aria-label="電荷の数直線"></svg>
+        <div class="legend"><span><i style="background:#868e96"></i>静止法（半径を読む）</span><span><i style="background:#3b5bdb"></i>落下・上昇法</span></div>
+        <div class="est">
+          <span>電気素量の見積もり　<i>e</i> ≈</span>
+          <input id="eIn" type="number" inputmode="decimal" min="0.1" max="20" step="0.01" placeholder="？">
+          <span>×10<sup>−19</sup> C</span>
+          <button class="btn ghost" id="refBtn">文献値と比べる</button>
+        </div>
+        <div class="estout" id="estout"></div>
+        <details>
+          <summary>見積もりのヒント</summary>
+          <p>点はばらばらではなく，いくつかの「かたまり」に分かれていないだろうか。2つの方法で，かたまりの見え方はちがうだろうか。</p>
+          <p>となり合うかたまりの間隔はどれくらいか。いちばん小さいかたまりの値と比べてみよう。</p>
+          <p>すべての電荷が「ある値の整数倍」になっているとすると，その値はいくらか。条件を満たす値のうち，<b>最も大きいもの</b>を見積もろう（半分の値でも整数倍にはなってしまう）。</p>
+        </details>
+        <details>
+          <summary>自動計算のしくみ</summary>
+          <p>空気抵抗は <span class="formula">krv</span>（<span class="formula">k</span> = 3.39×10⁻⁴ N·s/m²，<span class="formula">r</span> は半径，<span class="formula">v</span> は速さ），質量は <span class="formula">m = (4/3)πr³ρ</span>。</p>
+          <p><b>静止法（半径を読む）</b>：顕微鏡で半径 <span class="formula">r</span> を読んで質量 <span class="formula">m</span> を求め，電圧 <span class="formula">V</span> で静止させる。<span class="formula">q(V/d) = mg</span>　→　<span class="formula">q = mgd / V</span>。半径は光の点の大きさから読むので誤差が大きく，<span class="formula">q ∝ r³</span> なのでその3倍の割合で <span class="formula">q</span> に効く。</p>
+          <p><b>落下・上昇法</b>：電場OFFで落下させ，終端速度 <span class="formula">v₁</span> を測る。<span class="formula">mg = krv₁</span> と <span class="formula">m = (4/3)πr³ρ</span> から <span class="formula">r</span> と <span class="formula">m</span> が決まる。次に電圧 <span class="formula">V</span> で速さ <span class="formula">v₂</span> で上昇させる。<span class="formula">q(V/d) = mg + krv₂</span>　→　<span class="formula">q = kr(v₁+v₂)d / V</span>。時間の測定は精度がよいので，<span class="formula">q</span> のばらつきは小さい。</p>
+          <p>油の密度 ρ = 9.0×10² kg/m³，g = 9.8 m/s²，極板間隔 d = 5.0 mm，A–B間 0.50 mm。</p>
+        </details>
       </section>
+
     </div>
   </div>
 
@@ -196,29 +215,10 @@ details p{margin:.4em 0}
       <div class="tablebox" id="tablebox"></div>
     </section>
     <section class="card">
-      <h2>油滴の電荷の分布　<span class="cap">（1つの点＝1回の測定）</span></h2>
-      <svg id="numline" viewBox="0 0 700 190" role="img" aria-label="電荷の数直線"></svg>
-      <div class="legend"><span><i style="background:#868e96"></i>静止法（半径を読む）</span><span><i style="background:#3b5bdb"></i>落下・上昇法</span></div>
-      <div class="est">
-        <span>電気素量の見積もり　<i>e</i> ≈</span>
-        <input id="eIn" type="number" inputmode="decimal" min="0.1" max="20" step="0.01" placeholder="？">
-        <span>×10<sup>−19</sup> C</span>
-        <button class="btn ghost" id="refBtn">文献値と比べる</button>
-      </div>
-      <div class="estout" id="estout"></div>
-      <details>
-        <summary>見積もりのヒント</summary>
-        <p>点はばらばらではなく，いくつかの「かたまり」に分かれていないだろうか。2つの方法で，かたまりの見え方はちがうだろうか。</p>
-        <p>となり合うかたまりの間隔はどれくらいか。いちばん小さいかたまりの値と比べてみよう。</p>
-        <p>すべての電荷が「ある値の整数倍」になっているとすると，その値はいくらか。条件を満たす値のうち，<b>最も大きいもの</b>を見積もろう（半分の値でも整数倍にはなってしまう）。</p>
-      </details>
-      <details>
-        <summary>自動計算のしくみ</summary>
-        <p>空気抵抗は <span class="formula">krv</span>（<span class="formula">k</span> = 3.39×10⁻⁴ N·s/m²，<span class="formula">r</span> は半径，<span class="formula">v</span> は速さ），質量は <span class="formula">m = (4/3)πr³ρ</span>。</p>
-        <p><b>静止法（半径を読む）</b>：顕微鏡で半径 <span class="formula">r</span> を読んで質量 <span class="formula">m</span> を求め，電圧 <span class="formula">V</span> で静止させる。<span class="formula">q(V/d) = mg</span>　→　<span class="formula">q = mgd / V</span>。半径は光の点の大きさから読むので誤差が大きく，<span class="formula">q ∝ r³</span> なのでその3倍の割合で <span class="formula">q</span> に効く。</p>
-        <p><b>落下・上昇法</b>：電場OFFで落下させ，終端速度 <span class="formula">v₁</span> を測る。<span class="formula">mg = krv₁</span> と <span class="formula">m = (4/3)πr³ρ</span> から <span class="formula">r</span> と <span class="formula">m</span> が決まる。次に電圧 <span class="formula">V</span> で速さ <span class="formula">v₂</span> で上昇させる。<span class="formula">q(V/d) = mg + krv₂</span>　→　<span class="formula">q = kr(v₁+v₂)d / V</span>。時間の測定は精度がよいので，<span class="formula">q</span> のばらつきは小さい。</p>
-        <p>油の密度 ρ = 9.0×10² kg/m³，g = 9.8 m/s²，極板間隔 d = 5.0 mm，A–B間 0.50 mm。</p>
-      </details>
+      <h2>選んだ油滴の測定値（自動計算）</h2>
+      <div class="reads" id="reads"></div>
+      <div class="chartbox"><canvas id="chart"></canvas></div>
+      <div class="cap">油滴の高さ − 時間グラフ（直近20秒）。傾きが一定＝終端速度，水平＝静止。</div>
     </section>
   </div>
 </div>
