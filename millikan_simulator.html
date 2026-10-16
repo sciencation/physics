@@ -162,7 +162,7 @@ details p{margin:.4em 0}
             <button class="btn" id="recBtn" disabled>静止を記録</button>
             <button class="btn" id="xrayBtn" disabled>X線を当てる</button>
           </span>
-          <button class="btn auto" id="autoBtn">オート測定（5回）</button>
+          <button class="btn auto" id="autoBtn">オート測定（20回）</button>
         </div>
         <div class="opts lock">
           <span>時間の進み方</span>
@@ -182,7 +182,6 @@ details p{margin:.4em 0}
           <span>電気素量の見積もり　<i>e</i> ≈</span>
           <input id="eIn" type="number" inputmode="decimal" min="0.1" max="20" step="0.01" placeholder="？">
           <span>×10<sup>−19</sup> C</span>
-          <button class="btn ghost" id="refBtn">文献値と比べる</button>
         </div>
         <div class="estout" id="estout"></div>
         <details>
@@ -231,13 +230,13 @@ const C={rho:900, eta:1.8e-5, g:9.8, d:5.0e-3, e:1.602e-19, kT:4.04e-21, brown:0
 const K=6*Math.PI*C.eta;                       // 空気抵抗 = K r v
 const VIEW={h:1.6e-3, yA:0.4e-3, yB:0.9e-3};
 const L=VIEW.yB-VIEW.yA;
-const VMAX=1000, AUTO_N=5;
-const autoSpeed=()=>S.mode==='bal'?4:16;        // 静止法は工程が短いので控えめに早回し
+const VMAX=1000;
+const AUTO_SPEED=96;
 const $=id=>document.getElementById(id);
 
 /* ---------- 状態 ---------- */
 const S={mode:'bal', V:300, on:false, speed:1, t:0, drops:[], sel:null, timer:null, observe:null,
-         rows:[], showForce:false, flash:0, hist:[], nextId:1, eEst:null, showRef:false, lastRowId:0, auto:null};
+         rows:[], showForce:false, flash:0, hist:[], nextId:1, eEst:null, lastRowId:0, auto:null, autoN:20, autoUnlocked:/[?&]auto\b/.test(location.search)};
 
 function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
 function weighted(vals,w){let s=w.reduce((a,b)=>a+b,0),r=Math.random()*s;for(let i=0;i<vals.length;i++){r-=w[i];if(r<=0)return vals[i];}return vals[vals.length-1];}
@@ -328,7 +327,7 @@ function finishObserve(){
   note('');
   refresh(['V','q']);
 }
-function addRow(r){ r.no=S.rows.length+1; r.id=++S.lastRowId; S.rows.push(r); S.newRow=r.id; renderResults(); }
+function addRow(r){ r.no=S.rows.length+1; r.id=++S.lastRowId; S.rows.push(r); S.newRow=r.id; renderResults(); refresh(); }
 
 /* ---------- メッセージ ---------- */
 function note(t){ $('note').textContent=t; }
@@ -352,9 +351,12 @@ function refresh(flashKeys){
     bal ? '電場をONにし，電圧を調整して油滴をぴたりと静止させよう。止まったら「静止を記録」。'
         : '油滴をB線より下に置き，電圧を一定に保ったままA線まで上昇させよう。B→Aの通過時間を自動で計る。',
     '電荷を記録した。新しい油滴を噴霧するか，「X線を当てる」で同じ油滴の電荷を変えて，もう一度測ろう。'];
-  $('msg').textContent=S.auto? `オート測定中… ${S.auto.done} / ${AUTO_N} 回`: msgs[i];
+  $('msg').textContent=S.auto? `オート測定中… ${S.auto.done} / ${S.autoN} 回`: msgs[i];
   const d=S.sel;
   $('readBtn').style.display=bal?'':'none';
+  // オート測定は落下・上昇法で2回記録したあと（または裏コマンド）に表示
+  const riseCount=S.rows.filter(r=>r.method==='rise').length;
+  $('autoBtn').style.display=(!bal&&(S.autoUnlocked||riseCount>=2))?'':'none';
   $('recBtn').style.display=bal?'':'none';
   $('readBtn').disabled=!(d&&!d.meas.recorded);
   $('recBtn').disabled=!(d&&d.meas.rRead&&!d.meas.recorded&&!S.observe);
@@ -437,25 +439,22 @@ function renderNumline(){
 }
 function renderEst(){
   const e=S.eEst, out=$('estout');
-  if(!e){ out.innerHTML='<span class="cap">測定が8個くらい集まったら，点の並び方から <i>e</i> を見積もって入力しよう。数直線に <i>e</i> の整数倍の線が引かれる。</span>'; return; }
+  if(!e){ out.innerHTML='<span class="cap">測定値が集まってきたら，点の並び方から <i>e</i> を見積もって入力しよう。数直線に <i>e</i> の整数倍の線が引かれる。</span>'; return; }
   let h='';
   if(S.rows.length){
     const devs=S.rows.map(r=>{const x=r.q*1e19/e; return Math.abs(x-Math.max(1,Math.round(x)));});
     const mean=devs.reduce((a,b)=>a+b,0)/devs.length;
     h+=`<i>q</i> ÷ <i>e</i> の整数からのずれ（平均）：<b>${mean.toFixed(3)}</b>　<span class="cap">小さいほど「整数倍」によく合う</span>`;
   }
-  if(S.showRef){
-    const diff=(e-1.602)/1.602*100;
-    h+=`<br>文献値 <i>e</i> = 1.602×10<sup>−19</sup> C　見積もりとの差：<b>${diff>=0?'+':'−'}${Math.abs(diff).toFixed(1)} %</b>`;
-  }
   out.innerHTML=h;
 }
 
 /* ---------- オート測定（自動操縦で実際にシミュレーションを回す） ---------- */
 function autoStart(){
-  if(S.auto) return;
+  if(S.auto||S.mode!=='rise') return;
+  if(!S.autoUnlocked && S.rows.filter(r=>r.method==='rise').length<2) return;
   S.auto={done:0, stage:'spray', wait:0, savedSpeed:S.speed, tries:0, stageT:S.t};
-  S.speed=autoSpeed();
+  S.speed=AUTO_SPEED;
   document.body.classList.add('auto');
   $('autoBtn').textContent='中止';
   setField(false); S.timer=null; S.observe=null;
@@ -465,7 +464,7 @@ function autoStop(msg){
   if(!S.auto) return;
   S.speed=S.auto.savedSpeed; S.auto=null;
   document.body.classList.remove('auto');
-  $('autoBtn').textContent='オート測定（5回）';
+  $('autoBtn').textContent=`オート測定（${S.autoN}回）`;
   setField(false);
   if(msg) note(msg);
   refresh();
@@ -508,7 +507,7 @@ function autoStep(dt){
       break;
     case 'next':
       A.done++; A.tries=0;
-      if(A.done>=AUTO_N) autoStop('オート測定が終わりました。'); else { setField(false); go('spray',0.3); refresh(); }
+      if(A.done>=S.autoN) autoStop('オート測定が終わりました。'); else { setField(false); go('spray',0.3); refresh(); }
       break;
   }
 }
@@ -681,7 +680,7 @@ function draw(){
     cx.fillStyle='#1b2233'; cx.fillText(txt,CW-w+2,22);
   }
   if(S.auto){
-    const txt=`オート測定中 ${S.auto.done}/${AUTO_N}　×${autoSpeed()}`;
+    const txt=`オート測定中 ${S.auto.done}/${S.autoN}　×${AUTO_SPEED}`;
     cx.font='bold 14px system-ui,sans-serif'; const w=cx.measureText(txt).width+20;
     cx.fillStyle='rgba(255,212,59,.92)'; roundRect(cx,8,8,w,28,8); cx.fill();
     cx.fillStyle='#1b2233'; cx.fillText(txt,18,22);
@@ -741,7 +740,6 @@ $('autoBtn').addEventListener('click',()=>{ if(S.auto) autoStop('オート測定
 $('forceChk').addEventListener('change',ev=>{S.showForce=ev.target.checked;});
 $('resetBtn').addEventListener('click',()=>{ if(!S.rows.length) return; if(S.resetArmed){ S.rows=[]; S.resetArmed=false; $('resetBtn').textContent='全消去'; renderResults(); } else { S.resetArmed=true; $('resetBtn').textContent='もう一度押すと消去'; setTimeout(()=>{S.resetArmed=false;$('resetBtn').textContent='全消去';},3000);} });
 $('eIn').addEventListener('input',ev=>{ const v=parseFloat(ev.target.value); S.eEst=(isFinite(v)&&v>=0.1&&v<=20)?v:null; S.newRow=0; renderResults(); });
-$('refBtn').addEventListener('click',()=>{ if(!S.eEst){ $('estout').innerHTML='<span class="cap">先に自分の見積もりを入力しよう。</span>'; return;} S.showRef=!S.showRef; renderEst(); });
 document.querySelectorAll('[data-speed]').forEach(b=>b.addEventListener('click',()=>{
   if(S.auto) return;
   S.speed=+b.dataset.speed; document.querySelectorAll('[data-speed]').forEach(o=>o.setAttribute('aria-pressed',o===b));
@@ -751,6 +749,10 @@ function setMode(m){
   S.mode=m; $('modeBal').setAttribute('aria-pressed',m==='bal'); $('modeRise').setAttribute('aria-pressed',m==='rise');
   S.timer=null; S.observe=null; note(''); refresh();
 }
+(function secret(){ let taps=[]; document.querySelector('h1').addEventListener('pointerdown',()=>{
+  const now=performance.now(); taps=taps.filter(t=>now-t<3000); taps.push(now);
+  if(taps.length>=5){ taps=[]; S.autoUnlocked=true; refresh(); note('オート測定を表示しました。'); }
+}); })();
 $('modeBal').addEventListener('click',()=>setMode('bal'));
 $('modeRise').addEventListener('click',()=>setMode('rise'));
 
