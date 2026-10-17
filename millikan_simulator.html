@@ -8,7 +8,7 @@
 :root{
   --bg:#f3f4f7; --card:#ffffff; --ink:#1b2233; --sub:#5b6478; --line:#dfe3ea;
   --accent:#3b5bdb; --accent-soft:#e7ecff; --amber:#f59f00; --pos:#e03131; --neg:#1971c2;
-  --good:#2b8a3e; --warn:#d9480f; --grey:#868e96;
+  --good:#2b8a3e; --warn:#d9480f; --grey:#868e96; --red:#e03131; --light:#91a7ff;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -17,13 +17,12 @@ body{background:var(--bg);color:var(--ink);font-family:"Hiragino Kaku Gothic Pro
 button{font:inherit;color:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
 .wrap{max-width:1240px;margin:0 auto;padding:12px 16px 40px}
 header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-bottom:12px}
-h1{font-size:1.25rem;margin:0;letter-spacing:.02em}
+h1{font-size:1.25rem;margin:0;letter-spacing:.02em;user-select:none;-webkit-user-select:none}
 h2{font-size:1rem;margin:0 0 8px}
 .seg{display:inline-flex;background:#e6e9f0;border-radius:12px;padding:3px}
 .seg button{border:0;background:transparent;padding:8px 16px;border-radius:9px;font-weight:600;color:var(--sub);min-height:42px}
 .seg button[aria-pressed="true"]{background:var(--card);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.15)}
-.seg.small button{padding:3px 10px;min-height:32px;font-size:.84rem}
-.card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 1px 2px rgba(20,30,60,.06),0 0 0 1px var(--line)}
+.card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 1px 2px rgba(20,30,60,.06),0 0 0 1px var(--line);position:relative}
 .main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;align-items:start}
 @media (max-width:860px){.main{grid-template-columns:1fr}}
 body.auto .lock{pointer-events:none;opacity:.55}
@@ -50,8 +49,8 @@ body.auto .lock{pointer-events:none;opacity:.55}
 .vslider .thumb{position:absolute;left:4px;right:4px;height:36px;margin-top:-18px;border-radius:10px;background:var(--accent);box-shadow:0 2px 6px rgba(0,0,0,.3);
   display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:700}
 .vslider .tick{position:absolute;right:6px;font-size:.66rem;color:var(--sub);transform:translateY(-50%);pointer-events:none}
-.fine{display:flex;flex-direction:column;gap:6px;width:54px}
-.fine button{flex:1;border:0;border-radius:10px;background:#eef1f6;font-weight:700;font-size:.92rem;box-shadow:inset 0 0 0 1px var(--line)}
+.fine{display:flex;flex-direction:column;gap:6px;width:58px}
+.fine button{flex:1;border:0;border-radius:10px;background:#eef1f6;font-weight:700;font-size:.8rem;white-space:nowrap;padding:0 2px;box-shadow:inset 0 0 0 1px var(--line)}
 .fine button:active{background:var(--accent-soft)}
 .switch{border:0;border-radius:12px;min-height:56px;font-weight:800;font-size:1rem;background:#e6e9f0;color:var(--sub);box-shadow:inset 0 0 0 1px var(--line)}
 .switch[aria-pressed="true"]{background:var(--pos);color:#fff;box-shadow:0 2px 8px rgba(224,49,49,.4)}
@@ -64,11 +63,11 @@ body.auto .lock{pointer-events:none;opacity:.55}
 .steps span.done{background:#d3f9d8;color:var(--good)}
 .msg{font-weight:600;min-height:2.6em;font-size:.92rem;line-height:1.45}
 .note{font-size:.82rem;color:var(--warn);min-height:1.3em;font-weight:600}
-.btnrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.btnrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
 .btn{border:0;border-radius:10px;padding:7px 12px;min-height:40px;font-size:.92rem;font-weight:700;background:#eef1f6;box-shadow:inset 0 0 0 1px var(--line)}
 .btn.primary{background:var(--accent);color:#fff;box-shadow:none}
 .btn.auto{background:#fff3bf;color:#7a4b00;box-shadow:inset 0 0 0 1px #ffd43b}
-.btn.ghost{background:transparent;min-height:40px;padding:6px 12px;font-size:.88rem;color:var(--accent)}
+.btn.ghost{background:transparent;min-height:36px;padding:5px 10px;font-size:.86rem;color:var(--accent)}
 .btn:disabled{opacity:.4;cursor:default}
 .opts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:6px;font-size:.84rem;color:var(--sub)}
 .opts label{display:inline-flex;align-items:center;gap:6px}
@@ -92,13 +91,13 @@ table{border-collapse:collapse;width:100%;font-size:.84rem;font-variant-numeric:
 th,td{padding:6px 5px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
 th{position:sticky;top:0;background:#f0f2f7;font-size:.76rem;color:var(--sub);font-weight:700}
 td.q{font-weight:800;color:var(--accent)}
-tr.bal td.q{color:var(--grey)}
+tr.first td.q{color:var(--red)} tr.auto td.q{color:var(--light)}
 td.ok{color:var(--good);font-weight:700} td.ng{color:var(--warn);font-weight:700}
 tr.new td{animation:flash 1.6s ease-out}
 .empty{padding:18px;text-align:center;color:var(--sub);font-size:.9rem}
 .hd{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px}
 #numline{width:100%;height:auto;display:block;max-height:34vh}
-.legend{display:flex;gap:14px;font-size:.8rem;color:var(--sub);margin-top:2px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.78rem;color:var(--sub);margin-top:2px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
 .est{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px;font-weight:700;font-size:.95rem}
 .est input{width:5.6em;font:inherit;font-weight:800;font-size:1.1rem;padding:6px 10px;border-radius:10px;border:2px solid var(--accent);text-align:right;color:var(--accent);background:#fff}
@@ -107,6 +106,50 @@ details{margin-top:10px;font-size:.9rem;color:var(--sub)}
 details summary{cursor:pointer;font-weight:700;color:var(--ink);padding:6px 0}
 details p{margin:.4em 0}
 .formula{font-family:"Times New Roman",serif;font-style:italic;font-size:1.02rem;color:var(--ink)}
+
+/* ストップウォッチ（分布カードの前面レイヤー） */
+.sw{position:absolute;inset:0;border-radius:14px;background:#f6f3e8;box-shadow:inset 0 0 0 2px var(--amber);padding:12px 14px;display:flex;flex-direction:column;gap:8px;z-index:5;overflow:auto}
+.sw h3{margin:0;font-size:.95rem;color:#7a4b00}
+#distCard.swon{min-height:580px}
+.sw input[type=number]::-webkit-inner-spin-button,.sw input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.sw input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.sw .time{font-variant-numeric:tabular-nums;font-size:2.6rem;font-weight:800;line-height:1;text-align:center;color:#1b2233;background:#fff;border-radius:12px;padding:8px;box-shadow:inset 0 0 0 1px var(--line)}
+.sw .time.run{color:var(--warn)}
+.swbtns{display:flex;gap:8px}
+.swbtns .btn{flex:1;min-height:46px;font-size:1rem}
+.swbtns .btn.start{background:var(--good);color:#fff;box-shadow:none}
+.swbtns .btn.start.run{background:var(--warn)}
+.slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.slot{background:#fff;border-radius:10px;padding:4px 6px 4px 10px;box-shadow:inset 0 0 0 1px var(--line);display:flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums;font-size:.9rem}
+.slot span{white-space:nowrap}
+.slot input{flex:1;width:2em;font:inherit;font-weight:800;font-size:1.05rem;padding:3px 4px;border:0;border-bottom:2px solid var(--line);text-align:right;background:transparent;min-width:0}
+.slot input:focus{outline:none;border-bottom-color:var(--accent)}
+.slot .x{border:0;background:#eef1f6;border-radius:8px;width:28px;height:28px;font-weight:700;color:var(--sub);flex:none}
+.vin{display:none;flex-direction:column;gap:6px;border-top:1px dashed #d8d2c2;padding-top:8px}
+.vin.show{display:flex}
+.vrowin{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:700}
+.vrowin input{width:5em;font:inherit;font-weight:800;font-size:1.05rem;padding:5px 8px;border-radius:8px;border:2px solid var(--accent);text-align:right;background:#fff}
+.pow{display:inline-flex;align-items:flex-start;font-weight:700;line-height:1}
+.pow .base{font-size:1.15rem;padding-top:14px}
+.exp{display:inline-flex;align-items:center;gap:3px;margin-left:2px}
+.exp .e{display:inline-block;min-width:2em;text-align:center;font-weight:800;font-size:.95rem;background:#fff;border-radius:6px;padding:3px 4px;box-shadow:inset 0 0 0 2px var(--accent);color:var(--accent)}
+.exp .e.blank{color:#aab}
+.exp .ud{display:inline-flex;flex-direction:column;gap:2px}
+.exp button{border:0;background:#eef1f6;border-radius:5px;width:26px;height:18px;line-height:1;font-size:.7rem;font-weight:700;box-shadow:inset 0 0 0 1px var(--line);padding:0}
+/* 電卓（視野の前面） */
+.calc{position:absolute;right:10px;bottom:10px;width:min(280px,80%);background:rgba(246,243,232,.98);border-radius:14px;padding:10px;box-shadow:0 6px 24px rgba(0,0,0,.45),inset 0 0 0 2px var(--amber);z-index:6;display:none;flex-direction:column;gap:6px}
+.calc.show{display:flex}
+.calc .disp{background:#fff;border-radius:10px;padding:6px 10px;text-align:right;font-variant-numeric:tabular-nums;box-shadow:inset 0 0 0 1px var(--line);min-height:3.4em}
+.calc .disp .ex{font-size:.8rem;color:var(--sub);min-height:1.2em;word-break:break-all}
+.calc .disp .res{font-size:1.35rem;font-weight:800;word-break:break-all}
+.calc .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.calc .keys button{border:0;border-radius:9px;min-height:40px;font-size:1.05rem;font-weight:700;background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.calc .keys button.op{background:#eef1f6}
+.calc .keys button.eq{background:var(--accent);color:#fff;box-shadow:none}
+.calc .keys button.cl{background:#ffe3e3;color:#c92a2a}
+.calc .keys button:active{filter:brightness(.92)}
+.calc .close{align-self:flex-end;border:0;background:transparent;color:var(--sub);font-size:.85rem;font-weight:700}
+.swfb{font-size:.84rem;color:var(--warn);font-weight:600;min-height:1.3em}
 </style>
 </head>
 <body>
@@ -114,7 +157,7 @@ details p{margin:.4em 0}
   <header>
     <h1>ミリカンの実験シミュレーター</h1>
     <div class="seg lock" role="group" aria-label="測定方法">
-      <button id="modeBal" aria-pressed="true">静止法（半径を読む）</button>
+      <button id="modeBal" aria-pressed="true">静止法</button>
       <button id="modeRise" aria-pressed="false">落下・上昇法</button>
     </div>
   </header>
@@ -125,7 +168,18 @@ details p{margin:.4em 0}
       <div class="rig">
         <div class="scope">
           <div class="plate top" id="plateTop">上の極板（＋）</div>
-          <div class="canvasbox lock" id="canvasbox"><canvas id="view"></canvas></div>
+          <div class="canvasbox lock" id="canvasbox"><canvas id="view"></canvas>
+            <div class="calc" id="calc">
+              <div class="disp"><div class="ex" id="calcEx"></div><div class="res" id="calcRes">0</div></div>
+              <div class="keys">
+                <button class="cl" data-k="C">C</button><button class="op" data-k="bs">⌫</button><button class="op" data-k="(">(</button><button class="op" data-k=")">)</button>
+                <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button class="op" data-k="÷">÷</button>
+                <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button class="op" data-k="×">×</button>
+                <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button class="op" data-k="−">−</button>
+                <button data-k="0">0</button><button data-k=".">.</button><button class="eq" data-k="=">=</button><button class="op" data-k="+">+</button>
+              </div>
+              <button class="close" id="calcClose">閉じる ×</button>
+            </div></div>
           <div class="plate bottom" id="plateBottom">下の極板（−）</div>
           <div class="scopenote">顕微鏡の視野（極板間隔 5.0 mm のうち中央の 1.6 mm）<br>油滴をタップして選ぶ</div>
         </div>
@@ -138,10 +192,10 @@ details p{margin:.4em 0}
               <div class="thumb" id="vthumb">電圧</div>
             </div>
             <div class="fine">
-              <button data-step="10">+10</button>
-              <button data-step="1">+1</button>
-              <button data-step="-1">−1</button>
-              <button data-step="-10">−10</button>
+              <button data-step="10">+10 V</button>
+              <button data-step="1">+1 V</button>
+              <button data-step="-1">−1 V</button>
+              <button data-step="-10">−10 V</button>
             </div>
           </div>
           <button class="switch" id="fieldSw" aria-pressed="false">電場 OFF</button>
@@ -158,26 +212,19 @@ details p{margin:.4em 0}
         <div class="btnrow">
           <span class="lock" style="display:contents">
             <button class="btn primary" id="sprayBtn">油滴を噴霧</button>
-            <button class="btn" id="readBtn" disabled>半径を読む</button>
-            <button class="btn" id="recBtn" disabled>静止を記録</button>
+            <button class="btn" id="chkBtn" disabled>静止を確認</button>
             <button class="btn" id="xrayBtn" disabled>X線を当てる</button>
           </span>
           <button class="btn auto" id="autoBtn">オート測定（20回）</button>
-        </div>
-        <div class="opts lock">
-          <span>時間の進み方</span>
-          <div class="seg small" role="group" aria-label="時間の進み方">
-            <button data-speed="1" aria-pressed="true">×1</button>
-            <button data-speed="2" aria-pressed="false">×2</button>
-            <button data-speed="4" aria-pressed="false">×4</button>
-          </div>
-          <label><input type="checkbox" id="forceChk"> 力の矢印</label>
+          <label class="lock" style="font-size:.84rem;color:var(--sub);display:inline-flex;align-items:center;gap:6px;margin-left:auto"><input type="checkbox" id="forceChk" style="width:20px;height:20px"> 力の矢印</label>
         </div>
       </section>
-      <section class="card">
+
+      <section class="card" id="distCard">
         <h2>油滴の電荷の分布　<span class="cap">（1つの点＝1回の測定）</span></h2>
+        <div id="autoNote" style="display:none;background:#e7ecff;color:#1c3fa8;border-radius:10px;padding:8px 12px;font-weight:700;font-size:.92rem;margin-bottom:6px">2回目からは，ストップウォッチは使わず，A線・B線の通過時刻をシミュレーターが自動で計ります。油滴を選んで，AB間を落下・上昇させるだけで，右下の測定値パネルに時間と計算結果が表示されます。</div>
         <svg id="numline" viewBox="0 0 700 190" role="img" aria-label="電荷の数直線"></svg>
-        <div class="legend"><span><i style="background:#868e96"></i>静止法（半径を読む）</span><span><i style="background:#3b5bdb"></i>落下・上昇法</span></div>
+        <div class="legend" id="legend"><span id="lgFirst"><i style="background:#e03131"></i>1回目（手動）</span><span id="lgManual"><i style="background:#3b5bdb"></i>手動</span><span id="lgAuto"><i style="background:#91a7ff"></i>オート測定</span></div>
         <div class="est">
           <span>電気素量の見積もり　<i>e</i> ≈</span>
           <input id="eIn" type="number" inputmode="decimal" min="0.1" max="20" step="0.01" placeholder="？">
@@ -186,19 +233,46 @@ details p{margin:.4em 0}
         <div class="estout" id="estout"></div>
         <details>
           <summary>見積もりのヒント</summary>
-          <p>点はばらばらではなく，いくつかの「かたまり」に分かれていないだろうか。2つの方法で，かたまりの見え方はちがうだろうか。</p>
+          <p>点はばらばらではなく，いくつかの「かたまり」に分かれていないだろうか。</p>
           <p>となり合うかたまりの間隔はどれくらいか。いちばん小さいかたまりの値と比べてみよう。</p>
           <p>すべての電荷が「ある値の整数倍」になっているとすると，その値はいくらか。条件を満たす値のうち，<b>最も大きいもの</b>を見積もろう（半分の値でも整数倍にはなってしまう）。</p>
         </details>
         <details>
           <summary>自動計算のしくみ</summary>
           <p>空気抵抗は <span class="formula">krv</span>（<span class="formula">k</span> = 3.39×10⁻⁴ N·s/m²，<span class="formula">r</span> は半径，<span class="formula">v</span> は速さ），質量は <span class="formula">m = (4/3)πr³ρ</span>。</p>
-          <p><b>静止法（半径を読む）</b>：顕微鏡で半径 <span class="formula">r</span> を読んで質量 <span class="formula">m</span> を求め，電圧 <span class="formula">V</span> で静止させる。<span class="formula">q(V/d) = mg</span>　→　<span class="formula">q = mgd / V</span>。半径は光の点の大きさから読むので誤差が大きく，<span class="formula">q ∝ r³</span> なのでその3倍の割合で <span class="formula">q</span> に効く。</p>
-          <p><b>落下・上昇法</b>：電場OFFで落下させ，終端速度 <span class="formula">v₁</span> を測る。<span class="formula">mg = krv₁</span> と <span class="formula">m = (4/3)πr³ρ</span> から <span class="formula">r</span> と <span class="formula">m</span> が決まる。次に電圧 <span class="formula">V</span> で速さ <span class="formula">v₂</span> で上昇させる。<span class="formula">q(V/d) = mg + krv₂</span>　→　<span class="formula">q = kr(v₁+v₂)d / V</span>。時間の測定は精度がよいので，<span class="formula">q</span> のばらつきは小さい。</p>
+          <p>電場OFFで落下させ，終端速度 <span class="formula">v₁</span> を測る。<span class="formula">mg = krv₁</span> と <span class="formula">m = (4/3)πr³ρ</span> から <span class="formula">r</span> と <span class="formula">m</span> が決まる。次に電圧 <span class="formula">V</span> で速さ <span class="formula">v₂</span> で上昇させる。<span class="formula">q(V/d) = mg + krv₂</span>　→　<span class="formula">q = kr(v₁+v₂)d / V</span>。</p>
           <p>油の密度 ρ = 9.0×10² kg/m³，g = 9.8 m/s²，極板間隔 d = 5.0 mm，A–B間 0.50 mm。</p>
         </details>
-      </section>
 
+        <!-- ストップウォッチ（1回目だけ前面に出る） -->
+        <div class="sw" id="sw" style="display:none">
+          <h3 style="display:flex;justify-content:space-between;align-items:center">ストップウォッチ<span style="background:#fff3bf;color:#7a4b00;border:2px solid var(--amber);border-radius:8px;padding:2px 10px;font-size:1rem;font-weight:800">AB間の距離 0.50 mm</span></h3>
+          <div class="time" id="swTime">0.00 s</div>
+          <div class="swbtns">
+            <button class="btn start" id="swStart">スタート</button>
+            <button class="btn" id="swLap">記録</button>
+            <button class="btn" id="swReset">リセット</button>
+          </div>
+          <div class="slots">
+            <div class="slot"><span>記録1</span><input type="number" inputmode="decimal" step="0.01" id="r1" placeholder="—"><span>s</span><button class="x" data-clr="1" aria-label="消す">×</button></div>
+            <div class="slot"><span>記録2</span><input type="number" inputmode="decimal" step="0.01" id="r2" placeholder="—"><span>s</span><button class="x" data-clr="2" aria-label="消す">×</button></div>
+            <div class="slot"><span>記録3</span><input type="number" inputmode="decimal" step="0.01" id="r3" placeholder="—"><span>s</span><button class="x" data-clr="3" aria-label="消す">×</button></div>
+          </div>
+          <div class="vin" id="vin">
+            <div class="cap" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>記録した時間から終端速度を計算して入力しよう（有効数字3桁）。</span><button class="btn ghost" id="calcOpen" style="flex:none">電卓</button></div>
+            <div class="vrowin"><span>落下の速さ <i>v</i>₁ ＝</span><input id="m1" type="number" inputmode="decimal" step="0.01" placeholder="?.??">
+              <span class="pow"><span class="base">×10</span><span class="exp"><span class="e blank" id="e1">?</span><span class="ud"><button data-exp="1" data-d="1">▲</button><button data-exp="1" data-d="-1">▼</button></span></span></span><span>m/s</span></div>
+            <div class="vrowin"><span>上昇の速さ <i>v</i>₂ ＝</span><input id="m2" type="number" inputmode="decimal" step="0.01" placeholder="?.??">
+              <span class="pow"><span class="base">×10</span><span class="exp"><span class="e blank" id="e2">?</span><span class="ud"><button data-exp="2" data-d="1">▲</button><button data-exp="2" data-d="-1">▼</button></span></span></span><span>m/s</span></div>
+            <div style="display:flex;gap:8px;align-items:center"><button class="btn primary" id="vCalc">計算する</button><span class="swfb" id="swfb"></span></div>
+          </div>
+          <div class="vin" id="swres">
+            <div class="cap">速さが求まった。あとは自動で計算する。</div>
+            <div class="reads" id="swreads"></div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:4px"><button class="btn primary" id="recQ" disabled>電気量を記録する</button></div>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -207,14 +281,12 @@ details p{margin:.4em 0}
     <section class="card">
       <div class="hd">
         <h2>測定結果</h2>
-        <div>
-          <button class="btn ghost lock" id="resetBtn">全消去</button>
-        </div>
+        <div><button class="btn ghost lock" id="resetBtn">全消去</button></div>
       </div>
       <div class="tablebox" id="tablebox"></div>
     </section>
     <section class="card">
-      <h2>選んだ油滴の測定値（自動計算）</h2>
+      <h2 id="readsTitle">選んだ油滴の測定値</h2>
       <div class="reads" id="reads"></div>
       <div class="chartbox"><canvas id="chart"></canvas></div>
       <div class="cap">油滴の高さ − 時間グラフ（直近20秒）。傾きが一定＝終端速度，水平＝静止。</div>
@@ -226,17 +298,20 @@ details p{margin:.4em 0}
 (function(){
 "use strict";
 /* ---------- 定数 ---------- */
-const C={rho:900, eta:1.8e-5, g:9.8, d:5.0e-3, e:1.602e-19, kT:4.04e-21, brown:0.4, rErr:0.08};
+const C={rho:900, eta:1.8e-5, g:9.8, d:5.0e-3, e:1.602e-19, kT:4.04e-21, brown:0.4};
 const K=6*Math.PI*C.eta;                       // 空気抵抗 = K r v
 const VIEW={h:1.6e-3, yA:0.4e-3, yB:0.9e-3};
 const L=VIEW.yB-VIEW.yA;
-const VMAX=1000;
-const AUTO_SPEED=96;
+const VMAX=1000, AUTO_SPEED=96, AUTO_N=20;
 const $=id=>document.getElementById(id);
 
 /* ---------- 状態 ---------- */
 const S={mode:'bal', V:300, on:false, speed:1, t:0, drops:[], sel:null, timer:null, observe:null,
-         rows:[], showForce:false, flash:0, hist:[], nextId:1, eEst:null, lastRowId:0, auto:null, autoN:20, autoUnlocked:/[?&]auto\b/.test(location.search)};
+         rows:[], showForce:false, flash:0, hist:[], nextId:1, eEst:null, lastRowId:0, auto:null,
+         autoUnlocked:/[?&]auto\b/.test(location.search),
+         sw:{running:false, t0:0, elapsed:0, rec:[null,null,null], V2:null, e1:null, e2:null, meas:null}};
+const manualCount=()=>S.rows.filter(r=>r.method==='manual').length;
+const firstRun=()=>manualCount()===0;            // 1回目はストップウォッチで手動計測
 
 function randn(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
 function weighted(vals,w){let s=w.reduce((a,b)=>a+b,0),r=Math.random()*s;for(let i=0;i<vals.length;i++){r-=w[i];if(r<=0)return vals[i];}return vals[vals.length-1];}
@@ -256,7 +331,7 @@ function makeDrop(neutral){
       trail:[], meas:newMeas()},p);
   }
 }
-function newMeas(){return {falls:[], v1:null, rFall:null, rRead:null, mEst:null, Vq:null, t2:null, v2:null, q:null, recorded:false};}
+function newMeas(){return {falls:[], v1:null, rFall:null, mEst:null, Vq:null, t2:null, v2:null, q:null, recorded:false, balOK:false};}
 
 /* ---------- 操作 ---------- */
 function spray(){
@@ -277,23 +352,17 @@ function setV(v){
   if(v===S.V) return;
   S.V=v;
   if(S.observe){S.observe=null; note('電圧を変えたので，判定を中止しました。');}
+  if(S.sw.running&&S.on&&!S.auto) note('電圧を変えたので，速度が変化した。');
   updateVoltageUI();
 }
 function setField(on){
   if(S.on===on) return;
   S.on=on;
   if(S.observe){S.observe=null; note('判定を中止しました。');}
+  if(S.sw.running&&!S.auto) note('電場を切り替えたので，速度が変化した。');
   updateVoltageUI(); refresh();
 }
 function toggleField(){ setField(!S.on); }
-function readRadius(){
-  const d=S.sel; if(!d||d.meas.recorded) return;
-  // 顕微鏡で光の点の大きさから半径を読む：真の値に 8% 程度の誤差，0.1 µm 刻み
-  let r=d.r*(1+C.rErr*randn()); r=Math.max(2e-7,Math.round(r/1e-7)*1e-7);
-  const M=d.meas; M.rRead=r; M.mEst=4/3*Math.PI*r*r*r*C.rho;
-  note('');
-  refresh(['r','m']);
-}
 function xray(){
   const d=S.sel; if(!d) return;
   const cands=[];
@@ -303,13 +372,14 @@ function xray(){
   d.n=weighted(cands,w);
   Object.assign(d,physOf(d.r,d.n));
   const keep=d.meas; d.meas=newMeas();
-  d.meas.falls=keep.falls; d.meas.v1=keep.v1; d.meas.rFall=keep.rFall; d.meas.rRead=keep.rRead; d.meas.mEst=keep.mEst;
+  d.meas.falls=keep.falls; d.meas.v1=keep.v1; d.meas.rFall=keep.rFall; d.meas.mEst=keep.mEst;
   S.timer=null; S.observe=null; S.flash=1;
-  note('X線で油滴の電荷が変わりました。もう一度，電荷を測ろう。');
+    note('X線で油滴の電荷が変わりました。もう一度，電荷を測ろう。');
   refresh();
 }
+/* 静止法：止まっているかの判定だけ */
 function startObserve(){
-  const d=S.sel; if(!d||!d.meas.rRead||d.meas.recorded) return;
+  const d=S.sel; if(!d) return;
   if(!S.on||S.V<=0){ note('電場をONにして，電圧で油滴を静止させよう。'); return; }
   S.observe={t0:S.t, V:S.V};
   note('静止しているか判定中…（電圧はそのまま）');
@@ -320,91 +390,190 @@ function finishObserve(){
   const r=S.V/d.vbal;
   if(!isFinite(d.vbal)||Math.abs(r-1)>0.03){
     note(r>1?'まだゆっくり上昇しています。電圧を少し下げよう。':'まだゆっくり落下しています。電圧を少し上げよう。');
-    refresh(); return;
+  } else {
+    d.meas.balOK=true; d.meas.Vq=S.V;
+    note('止まっています。重力と静電気力がつり合った。');
   }
-  const M=d.meas; M.Vq=S.V; M.q=M.mEst*C.g*C.d/M.Vq; M.recorded=true;
-  addRow({method:'bal', auto:!!S.auto, rRead:M.rRead, rFall:null, v1:null, V:M.Vq, v2:null, q:M.q});
-  note('');
-  refresh(['V','q']);
+  refresh(['V']);
 }
 function addRow(r){ r.no=S.rows.length+1; r.id=++S.lastRowId; S.rows.push(r); S.newRow=r.id; renderResults(); refresh(); }
+
+/* ---------- ストップウォッチ（1回目） ---------- */
+function swVisible(){ return S.mode==='rise' && firstRun() && !S.auto; }
+function swTick(){
+  const sw=S.sw; if(sw.running) sw.elapsed=S.t-sw.t0;
+  $('swTime').textContent=sw.elapsed.toFixed(2)+' s';
+  $('swTime').classList.toggle('run',sw.running);
+}
+function swStartStop(){
+  const sw=S.sw;
+  if(sw.running){ sw.running=false; sw.elapsed=S.t-sw.t0; $('swStart').textContent='スタート'; $('swStart').classList.remove('run'); }
+  else { sw.t0=S.t-sw.elapsed; sw.running=true; $('swStart').textContent='ストップ'; $('swStart').classList.add('run'); }   // 続きから動く
+  swTick();
+}
+function swLap(){
+  const sw=S.sw; const cur=sw.running?S.t-sw.t0:sw.elapsed; if(cur<=0) return;
+  const i=sw.rec.findIndex(x=>x==null); if(i<0) return;
+  sw.rec[i]=Math.round(cur*100)/100;
+  if(i===1) sw.V2=S.V;
+  swRender();
+}
+function swReset(){ const sw=S.sw; sw.running=false; sw.elapsed=0; $('swStart').textContent='スタート'; $('swStart').classList.remove('run'); swTick(); }
+function swClearSlot(i){ const sw=S.sw; sw.rec[i-1]=null; if(i===2) sw.V2=null; swRender(); }
+function swClearAll(){ const sw=S.sw; sw.rec=[null,null,null]; sw.V2=null; sw.meas=null; sw.result=null; $('swres').classList.remove('show'); $('swreads').innerHTML=''; sw.e1=sw.e2=null; $('m1').value=''; $('m2').value=''; $('swfb').textContent=''; swReset(); swRender(); }
+function swRender(){
+  const sw=S.sw;
+  sw.rec.forEach((t,i)=>{ const el=$('r'+(i+1)); if(document.activeElement!==el) el.value=t==null?'':t.toFixed(2); });
+  $('vin').classList.toggle('show', !sw.result);
+  [[1,sw.e1],[2,sw.e2]].forEach(([i,e])=>{ const el=$('e'+i); el.textContent=e==null?'?':(e<0?'−'+(-e):e); el.classList.toggle('blank',e==null); });
+  $('sw').style.display=swVisible()?'flex':'none'; $('distCard').classList.toggle('swon',swVisible());
+  swTick();
+}
+/* 入力値の判定：生徒自身が記録した時間を基準にする */
+function checkV(mant,exp,t){
+  if(!(mant>0)||exp==null) return 'empty';
+  if(!(t>0)) return 'wrong';
+  const val=mant*Math.pow(10,exp), target=L/t, ratio=val/target;
+  if(ratio>0.97&&ratio<1.03) return 'ok';
+  const dec=Math.round(Math.log10(ratio)); const r2=ratio/Math.pow(10,dec);
+  if(dec!==0&&r2>0.97&&r2<1.03) return 'digit';
+  return 'wrong';
+}
+function swCalc(){
+  const sw=S.sw, d=S.sel, fb=$('swfb');
+  const m1=parseFloat($('m1').value), m2=parseFloat($('m2').value);
+  const t1=sw.rec[0], t2=sw.rec[1];
+  const c1=checkV(m1,sw.e1,t1); let c2=checkV(m2,sw.e2,t2);
+  if(c2!=='ok'&&t1!=null&&t2!=null&&t2>t1){ const alt=checkV(m2,sw.e2,t2-t1); if(alt==='ok') c2='ok'; else if(alt==='digit') c2='digit'; }
+  if(t1==null||t2==null){ fb.textContent='先に記録1（落下）と記録2（上昇）の時間を記録しよう。'; return; }
+  if(c1==='empty'||c2==='empty'){ fb.textContent='仮数と指数の両方を入力しよう。'; return; }
+  if(c1==='digit'||c2==='digit'){ fb.textContent='桁数が間違っているかもしれない。'; return; }
+  if(c1==='wrong'||c2==='wrong'){ fb.textContent='油滴はすぐに終端速度に達するので，電圧を変えなければ速さは一定と考えてよい。AB間の距離を，記録した時間で割ってみよう。'; return; }
+  fb.textContent='';
+  // 生徒の入力値で以降を自動計算（油滴を見失っていても記録した時間から計算できる）
+  const M=d? d.meas : (S.sw.meas=newMeas());
+  M.falls=[t1]; M.v1=m1*Math.pow(10,sw.e1); M.t2=t2; M.v2=m2*Math.pow(10,sw.e2); M.Vq=sw.V2||S.V;
+  M.rFall=Math.sqrt(3*K*M.v1/(4*Math.PI*C.rho*C.g));
+  M.mEst=4/3*Math.PI*Math.pow(M.rFall,3)*C.rho;
+  M.q=(M.mEst*C.g+K*M.rFall*M.v2)*C.d/M.Vq;
+  // 計算の様子を順に表示し，「電気量を記録する」を待つ
+  sw.result=M; $('vin').classList.remove('show'); $('swres').classList.add('show'); $('recQ').disabled=true;
+  const lines=[
+    ['落下の終端速度 <i>v</i>₁', sup((M.v1*1e5).toFixed(2),'−5')+' m/s'],
+    ['上昇の終端速度 <i>v</i>₂', sup((M.v2*1e5).toFixed(2),'−5')+' m/s'],
+    ['半径 <i>r</i>　mg ＝ krv₁，m ＝ (4/3)πr³ρ より', sup((M.rFall*1e7).toFixed(2),'−7')+' m'],
+    ['質量 <i>m</i> ＝ (4/3)πr³ρ', sup((M.mEst*1e15).toFixed(2),'−15')+' kg'],
+    ['上昇時の電圧 <i>V</i>', M.Vq+' V'],
+    ['電荷 <i>q</i> ＝ (mg ＋ krv₂)·d / V', sup((M.q*1e19).toFixed(2),'−19')+' C'],
+  ];
+  $('swreads').innerHTML='';
+  lines.forEach((l,i)=>setTimeout(()=>{ $('swreads').innerHTML+=`<div class="k">${l[0]}</div><div class="v${i===lines.length-1?' big':''} flash">${l[1]}</div>`; if(i===lines.length-1) $('recQ').disabled=false; },400*(i+1)));
+  S.calcStage=4; refresh(['t1','v1','t2','v2','r','m','V','q']);
+}
+function recordQ(){
+  const sw=S.sw, M=sw.result; if(!M) return;
+  M.recorded=true; S.calcStage=0; sw.result=null;
+  addRow({method:'manual', first:true, rFall:M.rFall, v1:M.v1, V:M.Vq, v2:M.v2, q:M.q});
+  swClearAll(); note(''); refresh(['q']);
+}
 
 /* ---------- メッセージ ---------- */
 function note(t){ $('note').textContent=t; }
 function stepIndex(){
+  if(S.mode==='rise'&&firstRun()&&!S.sel&&S.sw.rec[0]!=null&&S.sw.rec[1]!=null) return 3;
   if(!S.drops.length) return 0;
-  const d=S.sel; if(!d) return 1;
-  if(S.mode==='bal'){ if(!d.meas.rRead) return 2; }
-  else { if(!d.meas.v1) return 2; }
+  const d=S.sel;
+  if(!d){ if(S.mode==='rise'&&firstRun()&&S.sw.rec[0]!=null&&S.sw.rec[1]!=null) return 3; return 1; }
+  if(S.mode==='bal') return d.meas.balOK?3:2;
+  if(firstRun()){ const sw=S.sw; if(sw.rec[0]==null||sw.rec[1]==null) return 2; if(!d.meas.recorded) return 3; return 4; }
+  if(!d.meas.v1) return 2;
   if(!d.meas.recorded) return 3;
   return 4;
 }
 function refresh(flashKeys){
-  const i=stepIndex(), bal=S.mode==='bal';
-  const names=['① 噴霧','② 油滴を選ぶ', bal?'③ 半径を読む':'③ 落下を計る', bal?'④ 静止させる':'④ 上昇を計る','⑤ 記録'];
+  const i=stepIndex(), bal=S.mode==='bal', first=firstRun();
+  let names, msgs;
+  if(bal){
+    names=['① 噴霧','② 油滴を選ぶ','③ 静止させる','④ 確認'];
+    msgs=['「油滴を噴霧」を押して，極板の間に油滴を入れよう。',
+          '観察する油滴を1つタップして選ぼう。電圧をかけたときの動き方は，油滴ごとにちがう。',
+          '電場をONにし，電圧を調整して油滴をぴたりと静止させよう。止まったと思ったら「静止を確認」。',
+          '油滴が静止した。別の油滴でも試してみよう。ただし，この方法では半径が分からないので電荷は求められない。'];
+  } else if(first){
+    names=['① 噴霧','② 油滴を選ぶ','③ 時間を計る','④ 速さを入力','⑤ 記録'];
+    msgs=['「油滴を噴霧」を押して，極板の間に油滴を入れよう。',
+          '観察する油滴を1つタップして選ぼう。電圧をかけたときの動き方は，油滴ごとにちがう。',
+          '電場OFFで落下させ，A線からB線までの時間をストップウォッチで計って「記録」。次に電場ONで上昇させ，B線からA線までの時間を計って「記録」。',
+          '記録した2つの時間から，落下と上昇の終端速度を計算して入力しよう。',
+          '電荷を記録した。新しい油滴を噴霧して，もう一度測ろう。'];
+  } else {
+    names=['① 噴霧','② 油滴を選ぶ','③ 落下を計る','④ 上昇を計る','⑤ 記録'];
+    msgs=['2回目からは時間の測定を自動で行います。「油滴を噴霧」を押して，極板の間に油滴を入れよう。',
+          '2回目からは時間の測定を自動で行います。注目する油滴を1つタップして選ぼう。',
+          '時間の測定は自動で行います。注目する油滴を選んで，AB間を終端速度で落下および上昇させてください。',
+          '時間の測定は自動で行います。電圧を一定に保ったまま，AB間を上昇させてください。',
+          '電荷を記録した。新しい油滴を噴霧するか，「X線を当てる」で同じ油滴の電荷を変えて，もう一度測ろう。'];
+  }
   $('steps').innerHTML=names.map((n,k)=>`<span class="${k<i?'done':k===i?'now':''}">${n}</span>`).join('');
-  const msgs=[
-    '「油滴を噴霧」を押して，極板の間に油滴を入れよう。',
-    '観察する油滴を1つタップして選ぼう。電圧をかけたときの動き方は，油滴ごとにちがう。',
-    bal ? '「半径を読む」で，顕微鏡に見える光の点の大きさから油滴の半径を読み取ろう。質量が決まる。'
-        : '電場をONにして油滴をA線より上まで持ち上げ，電場をOFFにして落下させよう。A→Bの通過時間を自動で計る。',
-    bal ? '電場をONにし，電圧を調整して油滴をぴたりと静止させよう。止まったら「静止を記録」。'
-        : '油滴をB線より下に置き，電圧を一定に保ったままA線まで上昇させよう。B→Aの通過時間を自動で計る。',
-    '電荷を記録した。新しい油滴を噴霧するか，「X線を当てる」で同じ油滴の電荷を変えて，もう一度測ろう。'];
-  $('msg').textContent=S.auto? `オート測定中… ${S.auto.done} / ${S.autoN} 回`: msgs[i];
+  $('msg').textContent=S.auto? `オート測定中… ${S.auto.done} / ${AUTO_N} 回`: msgs[i];
   const d=S.sel;
-  $('readBtn').style.display=bal?'':'none';
-  // オート測定は落下・上昇法で2回記録したあと（または裏コマンド）に表示
-  const riseCount=S.rows.filter(r=>r.method==='rise').length;
-  $('autoBtn').style.display=(!bal&&(S.autoUnlocked||riseCount>=2))?'':'none';
-  $('recBtn').style.display=bal?'':'none';
-  $('readBtn').disabled=!(d&&!d.meas.recorded);
-  $('recBtn').disabled=!(d&&d.meas.rRead&&!d.meas.recorded&&!S.observe);
-  $('xrayBtn').disabled=!d;
+  $('chkBtn').style.display=bal?'':'none';
+  $('chkBtn').disabled=!(d&&!S.observe);
+  $('xrayBtn').disabled=!d||(!bal&&first);
+  $('autoBtn').style.display=(!bal&&(S.autoUnlocked||manualCount()>=2))?'':'none';
+  $('readsTitle').textContent=bal?'選んだ油滴':'選んだ油滴の測定値'+(first?'':'（自動計算）');
+  $('autoNote').style.display=(!bal&&!first&&manualCount()===1)?'':'none';
+  swRender();
   renderReads(flashKeys||[]);
 }
 
 /* ---------- 測定値パネル ---------- */
 const sup=(m,e)=>`${m}<small> ×10<sup>${e}</sup></small>`;
 function renderReads(flashKeys){
-  const d=S.sel, M=d?d.meas:newMeas();
+  const d=S.sel, M=d?d.meas:(S.mode==='rise'&&firstRun()&&S.sw.meas?S.sw.meas:newMeas());
   const dash='<span style="color:#aab">—</span>';
   const rows=[];
   if(S.mode==='bal'){
-    rows.push(['r','読み取った半径 <i>r</i>（顕微鏡）', M.rRead? sup((M.rRead*1e7).toFixed(1),'−7')+' m':dash]);
-    rows.push(['m','油滴の質量 <i>m</i> = (4/3)π<i>r</i>³ρ', M.mEst? sup((M.mEst*1e15).toFixed(2),'−15')+' kg':dash]);
-    rows.push(['V','静止させた電圧 <i>V</i>', M.Vq? M.Vq+' V':dash]);
+    rows.push(['V','つり合いの電圧 <i>V</i>', M.balOK? M.Vq+' V':dash]);
+    rows.push(['s','状態', M.balOK?'静止を確認':dash]);
   }else{
+    const first=firstRun(), st=S.calcStage||0, sw=S.sw;
     const nf=M.falls.length;
-    rows.push(['t1',`落下時間 <i>t</i>₁（A→B 0.50 mm${nf>1?'，'+nf+'回の平均':''}）`, nf? (M.falls.reduce((a,b)=>a+b,0)/nf).toFixed(2)+' s':dash]);
-    rows.push(['v1','落下の終端速度 <i>v</i>₁', M.v1? sup((M.v1*1e5).toFixed(2),'−5')+' m/s':dash]);
-    rows.push(['r','半径 <i>r</i>（<i>v</i>₁ から）', M.rFall? sup((M.rFall*1e7).toFixed(2),'−7')+' m':dash]);
-    rows.push(['m','油滴の質量 <i>m</i>', M.mEst? sup((M.mEst*1e15).toFixed(2),'−15')+' kg':dash]);
-    rows.push(['t2','上昇時間 <i>t</i>₂（B→A）', M.t2? M.t2.toFixed(2)+' s':dash]);
-    rows.push(['v2','上昇の終端速度 <i>v</i>₂', M.v2? sup((M.v2*1e5).toFixed(2),'−5')+' m/s':dash]);
-    rows.push(['V','上昇時の電圧 <i>V</i>', M.Vq? M.Vq+' V':dash]);
+    const avg=nf? (M.falls.reduce((a,b)=>a+b,0)/nf).toFixed(2)+' s':dash;
+    const t1=first&&!M.recorded? (sw.rec[0]!=null? sw.rec[0].toFixed(2)+' s':dash) : avg;
+    const t2=first&&!M.recorded? (sw.rec[1]!=null? sw.rec[1].toFixed(2)+' s':dash) : (M.t2? M.t2.toFixed(2)+' s':dash);
+    const show=(k)=>!first||M.recorded||st>=k;
+    rows.push(['t1',`落下時間 <i>t</i>₁（A→B 0.50 mm${nf>1?'，'+nf+'回の平均':''}）`, t1]);
+    rows.push(['v1','落下の終端速度 <i>v</i>₁', M.v1&&show(1)? sup((M.v1*1e5).toFixed(2),'−5')+' m/s':dash]);
+    rows.push(['r','半径 <i>r</i>（<i>v</i>₁ から）', M.rFall&&show(2)? sup((M.rFall*1e7).toFixed(2),'−7')+' m':dash]);
+    rows.push(['m','油滴の質量 <i>m</i>', M.mEst&&show(3)? sup((M.mEst*1e15).toFixed(2),'−15')+' kg':dash]);
+    rows.push(['t2','上昇時間 <i>t</i>₂（B→A）', t2]);
+    rows.push(['v2','上昇の終端速度 <i>v</i>₂', M.v2&&show(1)? sup((M.v2*1e5).toFixed(2),'−5')+' m/s':dash]);
+    rows.push(['V','上昇時の電圧 <i>V</i>', M.Vq&&show(4)? M.Vq+' V':dash]);
+    rows.push(['q','油滴の電荷 <i>q</i>', M.q&&show(4)? sup((M.q*1e19).toFixed(2),'−19')+' C':dash, true]);
   }
-  rows.push(['q','油滴の電荷 <i>q</i>', M.q? sup((M.q*1e19).toFixed(2),'−19')+' C':dash, true]);
   $('reads').innerHTML=rows.map(r=>`<div class="k">${r[1]}</div><div class="v${r[3]?' big':''}${flashKeys.includes(r[0])?' flash':''}">${r[2]}</div>`).join('');
 }
 
 /* ---------- 結果の表と数直線 ---------- */
-const mname=r=>(r.method==='bal'?'静止':'上昇')+(r.auto?'（自動）':'');
+const colorOf=r=>r.method==='auto'?'#91a7ff':r.first?'#e03131':'#3b5bdb';
+const mname=r=>r.method==='auto'?'自動':(r.first?'手動（1回目）':'手動');
 function renderResults(){
   const e=S.eEst;
   if(!S.rows.length){ $('tablebox').innerHTML='<div class="empty">まだ測定結果がありません。油滴の電荷を測ると，ここに1行ずつ追加されます。</div>'; }
   else{
-    let h='<table><thead><tr><th>No.</th><th>方法</th><th>半径 <i>r</i> 読み<br>×10<sup>−7</sup> m</th><th>半径 <i>r</i> 落下から<br>×10<sup>−7</sup> m</th><th>落下 <i>v</i>₁<br>×10<sup>−5</sup> m/s</th><th>電圧 <i>V</i><br>V</th><th>上昇 <i>v</i>₂<br>×10<sup>−5</sup> m/s</th><th>電荷 <i>q</i><br>×10<sup>−19</sup> C</th>'+
-      (e?'<th><i>q</i> ÷ <i>e</i></th><th>整数<br>との差</th>':'')+'</tr></thead><tbody>';
+    let h='<table><thead><tr><th>No.</th><th>落下 <i>v</i>₁<br>×10<sup>−5</sup> m/s</th><th>電圧 <i>V</i><br>V</th><th>上昇 <i>v</i>₂<br>×10<sup>−5</sup> m/s</th><th>電荷 <i>q</i><br>×10<sup>−19</sup> C</th></tr></thead><tbody>';
     for(let i=S.rows.length-1;i>=0;i--){
       const r=S.rows[i]; const q19=r.q*1e19;
-      let ex='';
-      if(e){ const ratio=q19/e, n=Math.max(1,Math.round(ratio)), dev=ratio-n; ex=`<td>${ratio.toFixed(2)}</td><td class="${Math.abs(dev)<=0.15?'ok':'ng'}">${n} ${dev>=0?'+':'−'} ${Math.abs(dev).toFixed(2)}</td>`; }
-      h+=`<tr class="${r.method} ${r.id===S.newRow?'new':''}"><td>${r.no}</td><td>${mname(r)}</td><td>${r.rRead?(r.rRead*1e7).toFixed(1):'—'}</td><td>${r.rFall?(r.rFall*1e7).toFixed(2):'—'}</td><td>${r.v1?(r.v1*1e5).toFixed(2):'—'}</td><td>${r.V?r.V:'—'}</td><td>${r.v2?(r.v2*1e5).toFixed(2):'—'}</td><td class="q">${q19.toFixed(2)}</td>${ex}</tr>`;
+      h+=`<tr class="${r.method} ${r.first?'first':''} ${r.id===S.newRow?'new':''}"><td>${r.no}</td><td>${(r.v1*1e5).toFixed(2)}</td><td>${r.V}</td><td>${(r.v2*1e5).toFixed(2)}</td><td class="q">${q19.toFixed(2)}</td></tr>`;
     }
     $('tablebox').innerHTML=h+'</tbody></table>';
   }
   renderNumline(); renderEst();
+  const has=f=>S.rows.some(f);
+  $('lgFirst').style.display=has(r=>r.first)?'':'none';
+  $('lgManual').style.display=has(r=>r.method==='manual'&&!r.first)?'':'none';
+  $('lgAuto').style.display=has(r=>r.method==='auto')?'':'none';
 }
 function renderNumline(){
   const W=700,H=190,x0=36,x1=W-20,yAx=150;
@@ -426,34 +595,29 @@ function renderNumline(){
     if(qMax<=12||q%2===0) s+=`<text x="${x}" y="${yAx+20}" font-size="12" text-anchor="middle" fill="#5b6478">${q}</text>`;
   }
   s+=`<text x="${x1}" y="${H-4}" font-size="12" text-anchor="end" fill="#5b6478">電荷 q 〔×10⁻¹⁹ C〕</text>`;
-  const binW=qMax/70, stacks={};
+  const binW=qMax/70, stacks={}, circles=[];
   S.rows.forEach(r=>{
     const q=r.q*1e19; const b=Math.round(q/binW); stacks[b]=(stacks[b]||0)+1;
     const cy=yAx-9-(stacks[b]-1)*11;
     const isNew=r.id===S.newRow;
-    const col=r.method==='bal'?'#868e96':'#3b5bdb';
-    s+=`<circle cx="${X(q)}" cy="${Math.max(18,cy)}" r="${isNew?6:5}" fill="${col}" fill-opacity=".85" stroke="${isNew?'#f59f00':'#fff'}" stroke-width="${isNew?2.5:1}"/>`;
+    const z=r.first?2:(r.method==='manual'?1:0);          // 赤→濃い青→薄い青 の順に前面
+    circles.push([z,`<circle cx="${X(q)}" cy="${Math.max(18,cy)}" r="${isNew?6:5}" fill="${colorOf(r)}" fill-opacity=".95" stroke="${isNew?'#f59f00':'#fff'}" stroke-width="${isNew?2.5:1}"/>`]);
   });
+  circles.sort((a,b)=>a[0]-b[0]); s+=circles.map(c=>c[1]).join('');
   if(!S.rows.length) s+=`<text x="${W/2}" y="80" font-size="14" text-anchor="middle" fill="#8a93a6">測定した電荷が，ここに点として並んでいきます</text>`;
   $('numline').innerHTML=s;
 }
 function renderEst(){
   const e=S.eEst, out=$('estout');
   if(!e){ out.innerHTML='<span class="cap">測定値が集まってきたら，点の並び方から <i>e</i> を見積もって入力しよう。数直線に <i>e</i> の整数倍の線が引かれる。</span>'; return; }
-  let h='';
-  if(S.rows.length){
-    const devs=S.rows.map(r=>{const x=r.q*1e19/e; return Math.abs(x-Math.max(1,Math.round(x)));});
-    const mean=devs.reduce((a,b)=>a+b,0)/devs.length;
-    h+=`<i>q</i> ÷ <i>e</i> の整数からのずれ（平均）：<b>${mean.toFixed(3)}</b>　<span class="cap">小さいほど「整数倍」によく合う</span>`;
-  }
-  out.innerHTML=h;
+  out.innerHTML='';
 }
 
 /* ---------- オート測定（自動操縦で実際にシミュレーションを回す） ---------- */
 function autoStart(){
   if(S.auto||S.mode!=='rise') return;
-  if(!S.autoUnlocked && S.rows.filter(r=>r.method==='rise').length<2) return;
-  S.auto={done:0, stage:'spray', wait:0, savedSpeed:S.speed, tries:0, stageT:S.t};
+  if(!S.autoUnlocked && manualCount()<2) return;
+  S.auto={done:0, stage:'spray', wait:0, tries:0, stageT:S.t};
   S.speed=AUTO_SPEED;
   document.body.classList.add('auto');
   $('autoBtn').textContent='中止';
@@ -462,9 +626,9 @@ function autoStart(){
 }
 function autoStop(msg){
   if(!S.auto) return;
-  S.speed=S.auto.savedSpeed; S.auto=null;
+  S.speed=1; S.auto=null;
   document.body.classList.remove('auto');
-  $('autoBtn').textContent=`オート測定（${S.autoN}回）`;
+  $('autoBtn').textContent=`オート測定（${AUTO_N}回）`;
   setField(false);
   if(msg) note(msg);
   refresh();
@@ -474,32 +638,21 @@ function autoStep(dt){
   A.wait-=dt; if(A.wait>0) return;
   const d=S.sel;
   const go=(stage,wait)=>{A.stage=stage; A.wait=wait||0; A.stageT=S.t;};
-  if(A.stage!=='spray' && !d){ go('spray'); return; }           // 見失ったら噴霧からやり直し
-  if(S.t-A.stageT>60){ go('spray'); return; }                    // 一段階が長すぎたらやり直し
+  if(A.stage!=='spray' && !d){ go('spray'); return; }
+  if(S.t-A.stageT>60){ go('spray'); return; }
   switch(A.stage){
     case 'spray': {
       spray();
       const cands=S.drops.filter(x=>x.n>0&&!x.meas.recorded);
       selectDrop(cands[Math.floor(Math.random()*cands.length)]);
-      go(S.mode==='bal'?'read':'lift',0.6); break; }
-    /* 静止法 */
-    case 'read': readRadius(); go('setV',0.8); break;
-    case 'setV': {
-      setV(d.vbal*(1+0.02*randn()));                              // 人がつり合わせたときのずれ程度
-      setField(true); go('settle',1.5); break; }
-    case 'settle': startObserve(); go('judge',2.3); break;
-    case 'judge':
-      if(d.meas.recorded) go('next',0.6);
-      else { A.tries++; if(A.tries>3){A.tries=0; go('spray');} else go('setV',0.3); }
-      break;
-    /* 落下・上昇法 */
+      go('lift',0.6); break; }
     case 'lift':
       setV(Math.min(VMAX,d.vbal*1.8)); setField(true);
       if(d.y<0.22e-3){ setField(false); go('falling',0); }
       break;
     case 'falling':
       if(d.meas.v1 && d.y>0.95e-3){ setV(d.vbal*(1.3+0.6*Math.random())); setField(true); go('rising',0); }
-      else if(d.y>1.0e-3 && !d.meas.v1){ go('lift'); }           // 計時に失敗したら持ち上げ直す
+      else if(d.y>1.0e-3 && !d.meas.v1){ go('lift'); }
       break;
     case 'rising':
       if(d.meas.recorded) go('next',0.6);
@@ -507,7 +660,7 @@ function autoStep(dt){
       break;
     case 'next':
       A.done++; A.tries=0;
-      if(A.done>=S.autoN) autoStop('オート測定が終わりました。'); else { setField(false); go('spray',0.3); refresh(); }
+      if(A.done>=AUTO_N) autoStop('オート測定が終わりました。'); else { setField(false); go('spray',0.3); refresh(); }
       break;
   }
 }
@@ -565,7 +718,7 @@ function step(dt){
   S.drops=S.drops.filter(d=>d.y>-0.03*VIEW.h && d.y<1.03*VIEW.h && !(d===S.sel&&lost));
   if(lost){
     S.sel=null; S.timer=null; S.observe=null; S.hist=[];
-    if(!S.auto) note('油滴が視野の外へ出て，見失ってしまった。'+(S.drops.length?'別の油滴を選ぼう。':'もう一度噴霧しよう。'));
+    if(!S.auto && !(S.mode==='rise'&&firstRun())) note('油滴が視野の外へ出て，見失ってしまった。'+(S.drops.length?'別の油滴を選ぼう。':'もう一度噴霧しよう。'));
     refresh();
   }
   if(S.observe && S.t-S.observe.t0>=2) finishObserve();
@@ -577,12 +730,11 @@ function track(d,py,ny,dt,V){
   const cross=(line)=>tPrev+dt*(line-py)/(ny-py);
   S.hist.push({t:S.t,y:ny}); while(S.hist.length&&S.hist[0].t<S.t-20) S.hist.shift();
   d.trail.push({x:d.x,y:ny,t:S.t}); while(d.trail.length&&d.trail[0].t<S.t-1.5*S.speed) d.trail.shift();
-  if(M.recorded || S.mode==='bal') { S.timer=null; return; }
+  if(M.recorded || S.mode==='bal' || (firstRun()&&!S.auto)) { S.timer=null; return; }   // 1回目は手動計測
   if(S.timer && S.timer.V!==V){
     if(!S.auto) note(S.timer.kind==='fall'?'落下の計時中に電場がONになったので，計り直します。':'上昇の計時中に電圧が変わったので，計り直します。');
     S.timer=null; refresh();
   }
-  // 落下：A→B（電場OFF）
   if(V===0){
     if(py<VIEW.yA && ny>=VIEW.yA){ S.timer={kind:'fall',t0:cross(VIEW.yA),V:0}; note(''); }
     else if(S.timer&&S.timer.kind==='fall'&&ny<VIEW.yA){ S.timer=null; }
@@ -596,7 +748,6 @@ function track(d,py,ny,dt,V){
       refresh(['t1','v1','r','m']);
     }
   }
-  // 上昇：B→A（電圧一定）
   if(V>0 && M.v1){
     if(py>VIEW.yB && ny<=VIEW.yB){ S.timer={kind:'rise',t0:cross(VIEW.yB),V:V}; note(''); }
     else if(S.timer&&S.timer.kind==='rise'&&ny>VIEW.yB){ S.timer=null; }
@@ -604,7 +755,7 @@ function track(d,py,ny,dt,V){
       const t=cross(VIEW.yA)-S.timer.t0; S.timer=null;
       M.t2=t; M.v2=L/t; M.Vq=V;
       M.q=(M.mEst*C.g+K*M.rFall*M.v2)*C.d/V; M.recorded=true;
-      addRow({method:'rise', auto:!!S.auto, rRead:null, rFall:M.rFall, v1:M.v1, V:V, v2:M.v2, q:M.q});
+      addRow({method:S.auto?'auto':'manual', first:false, rFall:M.rFall, v1:M.v1, V:V, v2:M.v2, q:M.q});
       refresh(['t2','v2','V','q']);
     }
   }
@@ -660,7 +811,7 @@ function draw(){
     gg.addColorStop(0,sel?'rgba(255,255,230,1)':'rgba(230,240,255,.85)'); gg.addColorStop(0.3,sel?'rgba(255,240,170,.7)':'rgba(190,210,255,.45)'); gg.addColorStop(1,'rgba(150,180,255,0)');
     cx.fillStyle=gg; cx.beginPath(); cx.arc(x,y,r*4,0,7); cx.fill();
     if(sel){
-      cx.strokeStyle=d.meas.recorded?'#69db7c':'#ffd43b'; cx.lineWidth=2; cx.beginPath(); cx.arc(x,y,16,0,7); cx.stroke();
+      cx.strokeStyle=(d.meas.recorded||d.meas.balOK)?'#69db7c':'#ffd43b'; cx.lineWidth=2; cx.beginPath(); cx.arc(x,y,16,0,7); cx.stroke();
       if(S.showForce) drawForces(d,x,y,V);
     }
   }
@@ -680,7 +831,7 @@ function draw(){
     cx.fillStyle='#1b2233'; cx.fillText(txt,CW-w+2,22);
   }
   if(S.auto){
-    const txt=`オート測定中 ${S.auto.done}/${S.autoN}　×${AUTO_SPEED}`;
+    const txt=`オート測定中 ${S.auto.done}/${AUTO_N}　×${AUTO_SPEED}`;
     cx.font='bold 14px system-ui,sans-serif'; const w=cx.measureText(txt).width+20;
     cx.fillStyle='rgba(255,212,59,.92)'; roundRect(cx,8,8,w,28,8); cx.fill();
     cx.fillStyle='#1b2233'; cx.fillText(txt,18,22);
@@ -691,6 +842,7 @@ function draw(){
     cx.fillText('「油滴を噴霧」を押そう',CW/2,CH*0.2); cx.textAlign='left';
   }
   drawChart();
+  if(S.sw.running) swTick();
 }
 function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
 function arrow(c,x,y0,y1,col,label,lx){
@@ -733,26 +885,56 @@ $('canvasbox').addEventListener('pointerdown',ev=>{
 /* ---------- ボタン類 ---------- */
 $('sprayBtn').addEventListener('click',spray);
 $('fieldSw').addEventListener('click',toggleField);
-$('readBtn').addEventListener('click',readRadius);
-$('recBtn').addEventListener('click',startObserve);
+$('chkBtn').addEventListener('click',startObserve);
 $('xrayBtn').addEventListener('click',xray);
 $('autoBtn').addEventListener('click',()=>{ if(S.auto) autoStop('オート測定を中止しました。'); else autoStart(); });
 $('forceChk').addEventListener('change',ev=>{S.showForce=ev.target.checked;});
-$('resetBtn').addEventListener('click',()=>{ if(!S.rows.length) return; if(S.resetArmed){ S.rows=[]; S.resetArmed=false; $('resetBtn').textContent='全消去'; renderResults(); } else { S.resetArmed=true; $('resetBtn').textContent='もう一度押すと消去'; setTimeout(()=>{S.resetArmed=false;$('resetBtn').textContent='全消去';},3000);} });
+$('resetBtn').addEventListener('click',()=>{ if(!S.rows.length) return; if(S.resetArmed){ S.rows=[]; S.resetArmed=false; $('resetBtn').textContent='全消去'; S.sel=null; S.hist=[]; S.timer=null; S.observe=null; S.drops.forEach(d=>d.meas=newMeas()); swClearAll(); note(''); renderResults(); refresh(); } else { S.resetArmed=true; $('resetBtn').textContent='もう一度押すと消去'; setTimeout(()=>{S.resetArmed=false;$('resetBtn').textContent='全消去';},3000);} });
 $('eIn').addEventListener('input',ev=>{ const v=parseFloat(ev.target.value); S.eEst=(isFinite(v)&&v>=0.1&&v<=20)?v:null; S.newRow=0; renderResults(); });
-document.querySelectorAll('[data-speed]').forEach(b=>b.addEventListener('click',()=>{
-  if(S.auto) return;
-  S.speed=+b.dataset.speed; document.querySelectorAll('[data-speed]').forEach(o=>o.setAttribute('aria-pressed',o===b));
+// ストップウォッチ
+$('swStart').addEventListener('click',swStartStop);
+$('swLap').addEventListener('click',swLap);
+$('swReset').addEventListener('click',swReset);
+document.querySelectorAll('[data-clr]').forEach(b=>b.addEventListener('click',()=>swClearSlot(+b.dataset.clr)));
+[1,2,3].forEach(i=>$('r'+i).addEventListener('input',ev=>{ const v=parseFloat(ev.target.value); S.sw.rec[i-1]=isFinite(v)&&v>0?v:null; if(i===2&&S.sw.rec[1]!=null&&S.sw.V2==null) S.sw.V2=S.V; refresh(); }));
+$('recQ').addEventListener('click',recordQ);
+/* 電卓 */
+(function calculator(){
+  let ex='';
+  const fmt=v=>{ if(!isFinite(v)) return 'エラー'; if(v===0) return '0'; let s=Math.abs(v)<1e-3? v.toFixed(12) : Number(v.toPrecision(10)).toString(); if(s.includes('e')) s=v.toFixed(12); if(s.includes('.')) s=s.replace(/0+$/,'').replace(/\.$/,''); return s; };
+  function evalEx(str){
+    const t=str.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+    if(!/^[0-9.+\-*/() ]*$/.test(t)) return NaN;
+    try{ return Function('"use strict";return ('+t+')')(); }catch(e){ return NaN; }
+  }
+  const show=()=>{ $('calcEx').textContent=ex; const v=ex?evalEx(ex):0; $('calcRes').textContent=ex? (isFinite(v)?fmt(v):'…') : '0'; };
+  document.querySelectorAll('#calc .keys button').forEach(b=>b.addEventListener('click',()=>{
+    const k=b.dataset.k;
+    if(k==='C') ex='';
+    else if(k==='bs') ex=ex.slice(0,-1);
+    else if(k==='='){ const v=evalEx(ex); ex=isFinite(v)?fmt(v):''; }
+    else ex+=k;
+    show();
+  }));
+  $('calcOpen').addEventListener('click',()=>{ $('calc').classList.add('show'); show(); });
+  $('calcClose').addEventListener('click',()=>$('calc').classList.remove('show'));
+})();
+document.querySelectorAll('[data-exp]').forEach(b=>b.addEventListener('click',()=>{
+  const k=b.dataset.exp==='1'?'e1':'e2', d=+b.dataset.d; let e=S.sw[k];
+  e = e==null ? (d>0?0:-1) : Math.max(-8,Math.min(0,e+d));
+  S.sw[k]=e; swRender();
 }));
+$('vCalc').addEventListener('click',swCalc);
+// 裏コマンド：タイトルを3秒以内に5回タップ
+(function secret(){ let taps=[]; document.querySelector('h1').addEventListener('pointerdown',()=>{
+  const now=performance.now(); taps=taps.filter(t=>now-t<3000); taps.push(now);
+  if(taps.length>=5){ taps=[]; S.autoUnlocked=true; refresh(); note('オート測定を表示しました。'); }
+}); })();
 function setMode(m){
   if(S.auto) return;
   S.mode=m; $('modeBal').setAttribute('aria-pressed',m==='bal'); $('modeRise').setAttribute('aria-pressed',m==='rise');
   S.timer=null; S.observe=null; note(''); refresh();
 }
-(function secret(){ let taps=[]; document.querySelector('h1').addEventListener('pointerdown',()=>{
-  const now=performance.now(); taps=taps.filter(t=>now-t<3000); taps.push(now);
-  if(taps.length>=5){ taps=[]; S.autoUnlocked=true; refresh(); note('オート測定を表示しました。'); }
-}); })();
 $('modeBal').addEventListener('click',()=>setMode('bal'));
 $('modeRise').addEventListener('click',()=>setMode('rise'));
 
@@ -768,7 +950,7 @@ function frame(ts){
 fit(); updateVoltageUI(); refresh(); renderResults();
 requestAnimationFrame(frame);
 
-window.__millikan={S,C,VIEW,step,spray,selectDrop,setV,setField,toggleField,readRadius,startObserve,xray,setMode,autoStart,autoStop};
+window.__millikan={S,C,VIEW,step,spray,selectDrop,setV,setField,toggleField,startObserve,xray,setMode,autoStart,autoStop,swStartStop,swLap,swReset,swCalc,recordQ};
 })();
 </script>
 </body>
