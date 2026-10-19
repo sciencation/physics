@@ -399,7 +399,7 @@ function finishObserve(){
 function addRow(r){ r.no=S.rows.length+1; r.id=++S.lastRowId; S.rows.push(r); S.newRow=r.id; renderResults(); refresh(); }
 
 /* ---------- ストップウォッチ（1回目） ---------- */
-function swVisible(){ return S.mode==='rise' && firstRun() && !S.auto; }
+function swVisible(){ return S.mode==='rise' && firstRun() && !S.auto && !S.autoUnlocked; }
 function swTick(){
   const sw=S.sw; if(sw.running) sw.elapsed=S.t-sw.t0;
   $('swTime').textContent=sw.elapsed.toFixed(2)+' s';
@@ -420,7 +420,7 @@ function swLap(){
 }
 function swReset(){ const sw=S.sw; sw.running=false; sw.elapsed=0; $('swStart').textContent='スタート'; $('swStart').classList.remove('run'); swTick(); }
 function swClearSlot(i){ const sw=S.sw; sw.rec[i-1]=null; if(i===2) sw.V2=null; swRender(); }
-function swClearAll(){ const sw=S.sw; sw.rec=[null,null,null]; sw.V2=null; sw.meas=null; sw.result=null; $('swres').classList.remove('show'); $('swreads').innerHTML=''; sw.e1=sw.e2=null; $('m1').value=''; $('m2').value=''; $('swfb').textContent=''; swReset(); swRender(); }
+function swClearAll(){ const sw=S.sw; sw.rec=[null,null,null]; sw.V2=null; sw.meas=null; sw.result=null; sw.miss=0; $('swres').classList.remove('show'); $('swreads').innerHTML=''; sw.e1=sw.e2=null; $('m1').value=''; $('m2').value=''; $('swfb').textContent=''; swReset(); swRender(); }
 function swRender(){
   const sw=S.sw;
   sw.rec.forEach((t,i)=>{ const el=$('r'+(i+1)); if(document.activeElement!==el) el.value=t==null?'':t.toFixed(2); });
@@ -448,7 +448,8 @@ function swCalc(){
   if(t1==null||t2==null){ fb.textContent='先に記録1（落下）と記録2（上昇）の時間を記録しよう。'; return; }
   if(c1==='empty'||c2==='empty'){ fb.textContent='仮数と指数の両方を入力しよう。'; return; }
   if(c1==='digit'||c2==='digit'){ fb.textContent='桁数が間違っているかもしれない。'; return; }
-  if(c1==='wrong'||c2==='wrong'){ fb.textContent='油滴はすぐに終端速度に達するので，電圧を変えなければ速さは一定と考えてよい。AB間の距離を，記録した時間で割ってみよう。'; return; }
+  if(c1==='wrong'||c2==='wrong'){ sw.miss=(sw.miss||0)+1;
+    fb.textContent='油滴はすぐに終端速度に達するので，電圧を変えなければ速さは一定と考えてよい。'+(sw.miss>=2?'AB間の距離を，記録した時間で割ってみよう。':'もう一度計算してみよう。'); return; }
   fb.textContent='';
   // 生徒の入力値で以降を自動計算（油滴を見失っていても記録した時間から計算できる）
   const M=d? d.meas : (S.sw.meas=newMeas());
@@ -907,13 +908,14 @@ $('recQ').addEventListener('click',recordQ);
     if(!/^[0-9.+\-*/() ]*$/.test(t)) return NaN;
     try{ return Function('"use strict";return ('+t+')')(); }catch(e){ return NaN; }
   }
-  const show=()=>{ $('calcEx').textContent=ex; const v=ex?evalEx(ex):0; $('calcRes').textContent=ex? (isFinite(v)?fmt(v):'…') : '0'; };
+  let res='0';
+  const show=()=>{ $('calcEx').textContent=ex; $('calcRes').textContent=res; };
   document.querySelectorAll('#calc .keys button').forEach(b=>b.addEventListener('click',()=>{
     const k=b.dataset.k;
-    if(k==='C') ex='';
+    if(k==='C'){ ex=''; res='0'; }
     else if(k==='bs') ex=ex.slice(0,-1);
-    else if(k==='='){ const v=evalEx(ex); ex=isFinite(v)?fmt(v):''; }
-    else ex+=k;
+    else if(k==='='){ const v=evalEx(ex); res=isFinite(v)?fmt(v):'エラー'; if(isFinite(v)) ex=fmt(v); }
+    else { if(res!=='0'&&ex===res&&/[0-9.]/.test(k)) ex=''; ex+=k; }
     show();
   }));
   $('calcOpen').addEventListener('click',()=>{ $('calc').classList.add('show'); show(); });
